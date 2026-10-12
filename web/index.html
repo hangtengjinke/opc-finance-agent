@@ -43,12 +43,13 @@
 <body>
 <header>
   <h1>瀚钦OPC财税智能体管理平台</h1>
-  <span class="ver">V0.1.0 开发预览</span>
+  <span class="ver">V0.2.0 开发预览</span>
   <span class="tag">L2动作仅限人工执行</span>
 </header>
 <nav>
   <button class="active" data-tab="ingest">票据处理</button>
   <button data-tab="calendar">征期日历</button>
+  <button data-tab="notify">待办推送</button>
   <button data-tab="kb">合规问答</button>
   <button data-tab="docs">已归档票据</button>
 </nav>
@@ -88,6 +89,29 @@
         <tbody></tbody>
       </table>
       <div class="note">提前提醒由日历驱动；征期顺延以税务机关公告为准，知识库须同步更新。</div>
+    </div>
+  </div>
+
+  <div id="notify" class="panel">
+    <div class="card">
+      <h3>企业微信待办卡片推送（L1提醒通道）</h3>
+      <div class="note" style="margin-bottom:10px">卡片字段白名单：标题/截止日/剩余天数/金额区间/链接/L2提示——不含账号、税号、验证码。webhook未配置时为dry-run模式，卡片仅落本地。</div>
+      <button class="primary" onclick="pushCards()">扫描提醒窗口并推送到期待办</button>
+      <div id="pushResult" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3>当前提醒窗口内待推送任务</h3>
+      <table id="pendTable">
+        <thead><tr><th>任务</th><th>周期</th><th>截止日</th><th>提醒日</th><th>智能体动作（L0/L1）</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>已推送卡片记录（审计可查）</h3>
+      <table id="pushTable">
+        <thead><tr><th>ID</th><th>任务</th><th>截止日</th><th>模式</th><th>状态</th><th>推送时间</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 
@@ -153,13 +177,36 @@ async function confirmDoc(id) {
   await fetch(`/api/v1/documents/${id}/confirm`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({actor:'财务人员'})});
   loadDocs();
 }
+async function pushCards() {
+  const rows = await (await fetch('/api/v1/notifications/push', {method:'POST'})).json();
+  const html = rows.length
+    ? rows.map(r => `<div class="step-row"><span class="badge ok">卡片</span><b>${r.name}</b><span>截止 ${r.deadline}</span><span>${r.result}</span></div>`).join('')
+    : '<div class="note">当前无到期提醒任务（不在提醒窗口内或已全部推送）</div>';
+  document.getElementById('pushResult').innerHTML = html;
+  loadPending(); loadPushed();
+}
+async function loadPending() {
+  const rows = await (await fetch('/api/v1/notifications/pending')).json();
+  document.querySelector('#pendTable tbody').innerHTML = rows.map(r =>
+    `<tr><td>${r.name}</td><td>${r.cycle}</td><td>${r.deadline}</td><td>${r.remind_on}</td><td>${r.agent_action}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="note">窗口内任务已全部推送</td></tr>';
+}
+async function loadPushed() {
+  const rows = await (await fetch('/api/v1/notifications')).json();
+  document.querySelector('#pushTable tbody').innerHTML = rows.map(r =>
+    `<tr><td>${r.id}</td><td>${r.title}</td><td>${r.deadline}</td><td>${r.mode === 'real' ? '真实webhook' : 'dry-run'}</td><td class="${r.status==='ok'?'grade-A':'grade-C'}">${r.status}</td><td>${r.created_at}</td></tr>`).join('')
+    || '<tr><td colspan="6" class="note">暂无推送记录</td></tr>';
+}
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
   document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
   b.classList.add('active');
   document.getElementById(b.dataset.tab).classList.add('active');
+  history.replaceState(null, '', '#' + b.dataset.tab);
 });
-loadCal(); loadDocs();
+const hashTab = location.hash.replace('#', '');
+if (hashTab) { const b = document.querySelector(`nav button[data-tab="${hashTab}"]`); if (b) b.click(); }
+loadCal(); loadDocs(); loadPending(); loadPushed();
 </script>
 </body>
 </html>

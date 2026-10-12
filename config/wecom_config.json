@@ -1,0 +1,6 @@
+{
+  "webhook_url": "",
+  "card_link": "http://192.168.1.10:8020/",
+  "amount_range": "以当期台账为准",
+  "note": "Demo占位配置（软著纪律D3）：webhook_url留空即dry-run模式，卡片仅落本地data/dryrun_cards/不外发；生产环境由系统管理员按《阶段0技术规格》IF-13录入企业微信群机器人webhook并纳入外联清单管理"
+}

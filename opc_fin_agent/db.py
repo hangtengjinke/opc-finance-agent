@@ -31,6 +31,17 @@ CREATE TABLE IF NOT EXISTS audit_events (
     event_hash TEXT,
     created_at TEXT
 );
+CREATE TABLE IF NOT EXISTS pushed_cards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL,
+    deadline TEXT NOT NULL,
+    title TEXT,
+    payload TEXT,
+    mode TEXT,
+    status TEXT,
+    created_at TEXT,
+    UNIQUE(task_id, deadline)
+);
 """
 
 

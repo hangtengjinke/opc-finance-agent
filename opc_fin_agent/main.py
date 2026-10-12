@@ -10,6 +10,7 @@ from .calendar_seed import get_calendar
 from .kb import ask as kb_ask
 from .pipeline import process_document
 from .settings import APP_NAME, APP_VERSION, WEB_DIR, load_master_data
+from .wecom import due_tasks, push_due_reminders
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
 
@@ -78,6 +79,47 @@ def confirm(doc_id: int, body: ConfirmBody):
 @app.get("/api/v1/calendar")
 def calendar():
     return get_calendar()
+
+
+@app.get("/api/v1/notifications/pending")
+def pending_cards():
+    """预览当前提醒窗口内、尚未推送的待办卡片（不发送）。"""
+    conn = db.get_conn()
+    try:
+        pushed = {(r["task_id"], r["deadline"]) for r in
+                  conn.execute("SELECT task_id, deadline FROM pushed_cards")}
+        out = []
+        for t in due_tasks():
+            if (t["id"], t["next_deadline"]) not in pushed:
+                out.append({"task_id": t["id"], "name": t["name"], "cycle": t["cycle"],
+                            "deadline": t["next_deadline"], "remind_on": t["remind_on"],
+                            "agent_action": t["agent_action"]})
+        return out
+    finally:
+        conn.close()
+
+
+@app.post("/api/v1/notifications/push")
+def push_cards():
+    """推送提醒窗口内待办卡片至企业微信（未配置webhook时为dry-run落本地）。"""
+    conn = db.get_conn()
+    try:
+        return push_due_reminders(conn)
+    finally:
+        conn.close()
+
+
+@app.get("/api/v1/notifications")
+def list_cards():
+    """已推送卡片清单（含模式与内容，供审计核对）。"""
+    conn = db.get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT id, task_id, deadline, title, mode, status, created_at"
+            " FROM pushed_cards ORDER BY id DESC").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
 
 
 @app.get("/api/v1/kb/ask")

@@ -1,7 +1,7 @@
 # 瀚钦OPC财税智能体管理平台
 
 > (c) 2026 瀚钦科技有限公司. All rights reserved.
-> V0.1.0 开发预览（MVP 第一增量）｜软件著作权申报名：瀚钦OPC财税智能体管理平台V1.0（冻结后申报）
+> V0.2.0 开发预览（MVP 第二增量）｜软件著作权申报名：瀚钦OPC财税智能体管理平台V1.0（冻结后申报）
 
 本地部署的企业财税智能体 MVP 脚手架，面向小白财务人员，实现《总体建设方案》首期主流程的垂直切片。
 
@@ -17,7 +17,8 @@
 pip install -r requirements.txt
 python -m uvicorn opc_fin_agent.main:app --port 8020
 # 浏览器打开 http://127.0.0.1:8020
-python tests/smoke_test.py   # 冒烟测试（5用例）
+python tests/smoke_test.py       # 主流程冒烟测试（5用例）
+python tests/wecom_push_test.py  # 待办推送冒烟测试（6用例）
 ```
 
 ## 目录结构
@@ -31,10 +32,13 @@ opc-finance-agent/
 │   ├── rules.py       # 规则引擎（确定性代码，R01-R06）
 │   ├── db.py          # SQLite存储 + 哈希链审计
 │   ├── calendar_seed.py # 征期日历种子数据
+│   ├── wecom.py       # 企业微信待办卡片推送（字段白名单+脱敏+dry-run+去重）
 │   ├── kb.py          # 合规问答（无来源拒答）
 │   └── settings.py    # 配置与主数据加载
+├── config/wecom_config.json # 推送配置（webhook留空即dry-run，D3纪律）
 ├── web/index.html     # 单页操作界面（截图库素材来源）
-├── tests/smoke_test.py # 冒烟测试
+├── tests/smoke_test.py # 主流程冒烟测试
+├── tests/wecom_push_test.py # 推送通道冒烟测试
 └── docs/screenshots/  # 操作手册截图库（D4纪律）
 ```
 
@@ -52,7 +56,7 @@ opc-finance-agent/
 - OCR 接入与置信度分级（当前仅支持结构化数电票JSON）
 - PostgreSQL 分区化存储 + MinIO 对象存储（当前为SQLite/本地目录）
 - 本地大模型推理与RAG检索（当前为演示知识库）
-- 企业微信卡片推送（当前为Web界面）
+- 企业微信真实webhook启用（当前dry-run模式已验证消息体格式，启用仅需在config/wecom_config.json填入群机器人webhook并纳入外联清单管理）
 - 等保定级、单点登录、字段级加密遮蔽
 
 以上替换点均按《阶段0技术规格》的接口编号（IF-01~07）预留，禁止在骨架上直接绕过边界实现。

@@ -11,7 +11,7 @@ ARCHIVE_DIR = DATA_DIR / "archive"
 WEB_DIR = BASE_DIR / "web"
 
 APP_NAME = "瀚钦OPC财税智能体管理平台"
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.2.0"
 
 
 def load_master_data():
