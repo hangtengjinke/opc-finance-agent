@@ -6,8 +6,9 @@ import hashlib
 import json
 
 from .db import record_event
+from .objectstore import save_original
 from .rules import complete_fields, run_rules
-from .settings import ARCHIVE_DIR, load_master_data
+from .settings import load_master_data
 
 MAX_PAYLOAD_BYTES = 2 * 1024 * 1024  # 2MB，超出即安检拦截
 
@@ -62,14 +63,9 @@ def check_duplicate(conn, fields, chash):
 
 
 def archive_payload(payload, chash):
-    """归档：原件以哈希命名落盘（生产环境为MinIO fin-originals桶，不可变）。"""
-    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    path = ARCHIVE_DIR / f"{chash}.json"
-    if not path.exists():
-        path.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-    return str(path)
+    """归档：原件以哈希命名入对象存储（生产为 MinIO fin-originals 桶，不可变）。"""
+    data = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
+    return save_original(f"{chash}.json", data)
 
 
 def build_advice(fields, rule_results, dup):

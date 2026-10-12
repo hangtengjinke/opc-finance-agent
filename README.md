@@ -1,7 +1,7 @@
 # 瀚钦OPC财税智能体管理平台
 
 > (c) 2026 瀚钦科技有限公司. All rights reserved.
-> V0.5.0 开发预览（MVP 第五增量）｜软件著作权申报名：瀚钦OPC财税智能体管理平台V1.0（冻结后申报）
+> V0.6.0 开发预览（MVP 第六增量）｜软件著作权申报名：瀚钦OPC财税智能体管理平台V1.0（冻结后申报）
 
 本地部署的企业财税智能体 MVP 脚手架，面向小白财务人员，实现《总体建设方案》首期主流程的垂直切片。
 
@@ -22,6 +22,7 @@ python tests/wecom_push_test.py  # 待办推送冒烟测试（6用例）
 python tests/ocr_test.py         # OCR图片票据冒烟测试（8用例）
 python tests/paddle_adapter_test.py # PaddleOCR适配器冒烟测试（9用例）
 python tests/kb_test.py          # RAG真检索问答冒烟测试（9用例）
+python tests/storage_test.py    # 存储层（PG兼容/对象存储）测试（9用例）
 ```
 
 ## 目录结构
@@ -33,7 +34,9 @@ opc-finance-agent/
 │   ├── main.py        # FastAPI网关（对外唯一入口）
 │   ├── pipeline.py    # 主流程：安检→抽取→查重→规则→建议→归档
 │   ├── rules.py       # 规则引擎（确定性代码，R01-R06）
-│   ├── db.py          # SQLite存储 + 哈希链审计
+│   ├── db.py          # 数据访问层：sqlite/pg双后端分发 + 哈希链审计
+│   ├── pg_store.py    # PostgreSQL兼容层（sqlite API零改动切换，惰性导入诚实回退）
+│   ├── objectstore.py # 对象存储门面：local目录/MinIO双后端（原件不可变）
 │   ├── calendar_seed.py # 征期日历种子数据
 │   ├── wecom.py       # 企业微信待办卡片推送（字段白名单+脱敏+dry-run+去重）
 │   ├── ocr.py         # OCR图片票据接入层（引擎配置解析+置信度门禁+人工核验回填）
@@ -45,14 +48,17 @@ opc-finance-agent/
 ├── config/ocr_config.json   # OCR引擎开关（demo/paddle，部署PaddleOCR后切换）
 ├── config/kb_config.json    # RAG回答模式（extractive/llm，min_score阈值）
 ├── config/kb_docs/          # 知识库源文件（一手来源+审签元数据；未签不索引）
-├── deploy/                  # OCR/RAG部署指南 + requirements-ocr.txt（部署机专用）
+├── config/storage_config.json # 存储后端开关（sqlite↔pg、local↔minio，零改动切换）
+├── deploy/                  # OCR/RAG/PG-MinIO部署指南 + 生产依赖清单（部署机专用）
 ├── tools/ocr_selftest.py    # OCR引擎端到端自检（部署验收用）
+├── tools/migrate_sqlite_to_pg.py # 存量数据迁移（含审计哈希链完整性校验）
 ├── web/index.html     # 单页操作界面（截图库素材来源）
 ├── tests/smoke_test.py # 主流程冒烟测试
 ├── tests/wecom_push_test.py # 推送通道冒烟测试
 ├── tests/ocr_test.py   # OCR图片票据冒烟测试
 ├── tests/paddle_adapter_test.py # PaddleOCR适配器冒烟测试
 ├── tests/kb_test.py    # RAG真检索问答冒烟测试
+├── tests/storage_test.py # 存储层（PG兼容/对象存储）测试
 └── docs/screenshots/  # 操作手册截图库（D4纪律）
 ```
 
@@ -71,7 +77,11 @@ opc-finance-agent/
   部署服务器按 `deploy/OCR引擎部署指南.md` 安装 PaddleOCR 后把
   `config/ocr_config.json` 的 engine 切为 paddle 即启用，代码零改动；
   开发机未装引擎时真实图片得到「引擎未接入」的诚实回答，不编造字段
-- PostgreSQL 分区化存储 + MinIO 对象存储（当前为SQLite/本地目录）
+- PostgreSQL + MinIO **安装**：兼容层已实现（pg_store.py/sqlite API零改动包装器、
+  objectstore.py/local↔minio门面），部署服务器按 `deploy/PG-MinIO部署指南.md`
+  安装服务并把 `config/storage_config.json` 的 backend 切为 pg/minio 即启用，
+  存量数据用 `tools/migrate_sqlite_to_pg.py` 迁移（自带审计哈希链完整性校验）；
+  未就绪时启动得到带指引的明确报错，不静默降级
 - RAG生成式回答**安装**：BM25检索与抽取式回答已内置，部署服务器按
   `deploy/RAG问答部署指南.md` 安装 Ollama 并拉取模型后，把
   `config/kb_config.json` 的 answer_mode 切为 llm 即启用；模型宕机自动回退抽取式。

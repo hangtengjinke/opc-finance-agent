@@ -1,0 +1,10 @@
+# 瀚钦OPC财税智能体管理平台 生产部署额外依赖
+# 在 requirements.txt 基础上，部署机执行：
+#   pip install -r requirements.txt -r deploy/requirements-prod.txt
+# Python 3.10-3.12（与 PaddleOCR 引擎部署要求一致，见 deploy/OCR引擎部署指南.md）
+
+# PostgreSQL 生产后端（db.backend=pg 时必需）
+psycopg[binary]>=3.1,<4
+
+# MinIO 对象存储后端（object_store.backend=minio 时必需）
+minio>=7.2,<8

@@ -17,9 +17,10 @@ import struct
 import zlib
 
 from .db import record_event
+from .objectstore import save_original
 from .rules import run_rules
 from .pipeline import build_advice
-from .settings import ARCHIVE_DIR, BASE_DIR, load_master_data
+from .settings import BASE_DIR, load_master_data
 
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 MIN_WIDTH = 400
@@ -212,11 +213,8 @@ def process_image_document(conn, file_name, image_bytes, ocr_output=None,
         "image_hash": img_hash, "ocr_engine": ocr["engine"],
         "ocr_fields": {k: c for k, c in ocr["fields"].items()},
     }
-    # 归档原件（图片不可变保存）
-    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    archive_path = ARCHIVE_DIR / f"{img_hash}.{fmt}"
-    if not archive_path.exists():
-        archive_path.write_bytes(image_bytes)
+    # 归档原件（图片不可变保存，经对象存储门面：local目录/MinIO双后端）
+    archive_path = save_original(f"{img_hash}.{fmt}", image_bytes)
 
     if low:
         msg = (f"低置信度字段：{', '.join(low)}（阈值{CONF_THRESHOLD}），"

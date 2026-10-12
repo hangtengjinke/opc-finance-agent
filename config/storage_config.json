@@ -1,0 +1,15 @@
+{
+  "_comment": "存储后端开关。开发机默认 sqlite+local 零依赖运行；生产部署装好 PostgreSQL 与 MinIO 后改 backend 即切换（见 deploy/PG-MinIO部署指南.md）。pg_dsn 属敏感配置，生产环境建议改用环境变量 OPC_PG_DSN 注入。",
+  "database": {
+    "backend": "sqlite",
+    "pg_dsn": ""
+  },
+  "object_store": {
+    "backend": "local",
+    "endpoint": "",
+    "access_key": "",
+    "secret_key": "",
+    "bucket": "fin-originals",
+    "secure": false
+  }
+}

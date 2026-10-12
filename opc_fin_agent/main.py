@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from . import db
+from .objectstore import object_store_status
 from .calendar_seed import get_calendar
 from .kb import ask as kb_ask, kb_inventory, search_kb
 from .ocr import (demo_ocr_output, engine_status, make_demo_png,
@@ -50,6 +51,8 @@ def meta():
         "company": md["company"]["name"],
         "taxpayer_type": md["company"]["taxpayer_type"],
         "ocr_engine": engine_status(),
+        "storage": db.storage_status(),
+        "object_store": object_store_status(),
         "l2_note": "付款、申报、缴税、记账、开票等L2动作无自动化接口，须由财务人员人工执行",
     }
 
