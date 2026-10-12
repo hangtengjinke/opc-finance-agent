@@ -1,0 +1,19 @@
+{
+  "_meta": "Demo占位数据（软著纪律D3）：禁止录入真实密钥、账号、税号；上线前由财务负责人替换为真实企业主数据并加密封存",
+  "company": {
+    "name": "瀚钦科技有限公司",
+    "tax_no": "91310000DEMO000000X",
+    "established_date": "2024-03-15",
+    "taxpayer_type": "small_scale",
+    "tax_bureau": "Demo_税务局"
+  },
+  "bank": {
+    "name": "Demo_Bank上海分行",
+    "account": "Demo_ACC_0000",
+    "note": "仅用于收付校验的遮蔽字段；登录凭证类信息永不入库"
+  },
+  "suppliers_whitelist": [
+    {"name": "Demo_Supplier_01", "account": "Demo_ACC_S01"},
+    {"name": "Demo_Supplier_02", "account": "Demo_ACC_S02"}
+  ]
+}

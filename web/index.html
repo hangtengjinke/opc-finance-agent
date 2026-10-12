@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瀚钦OPC财税智能体管理平台 V0.1.0</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #1f2937; }
+  header { background: #1e3a5f; color: #fff; padding: 14px 28px; display: flex; align-items: baseline; gap: 14px; }
+  header h1 { font-size: 18px; }
+  header .ver { font-size: 12px; opacity: .8; }
+  header .tag { margin-left: auto; font-size: 12px; background: #c0392b; padding: 3px 10px; border-radius: 10px; }
+  nav { display: flex; gap: 4px; background: #fff; padding: 8px 24px 0; border-bottom: 2px solid #e5e7eb; }
+  nav button { border: none; background: none; padding: 10px 18px; font-size: 14px; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; }
+  nav button.active { color: #1e3a5f; font-weight: bold; border-bottom-color: #1e3a5f; }
+  main { padding: 22px 28px; max-width: 1180px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; }
+  .card h3 { font-size: 15px; margin-bottom: 12px; color: #1e3a5f; }
+  textarea { width: 100%; height: 150px; font-family: Consolas, monospace; font-size: 12px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+  button.primary { background: #1e3a5f; color: #fff; border: none; padding: 9px 22px; border-radius: 6px; font-size: 14px; cursor: pointer; margin-top: 10px; }
+  button.primary:hover { background: #2c5282; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; }
+  th { background: #f1f5f9; color: #334155; }
+  .grade-A { color: #047857; font-weight: bold; }
+  .grade-B { color: #b45309; font-weight: bold; }
+  .grade-C { color: #b91c1c; font-weight: bold; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+  .badge.ok { background: #ecfdf5; color: #047857; }
+  .badge.fail { background: #fef2f2; color: #b91c1c; }
+  .result { margin-top: 14px; }
+  .step-row { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px dashed #e5e7eb; font-size: 13px; }
+  .advice { background: #f8fafc; border-left: 4px solid #1e3a5f; padding: 12px 14px; margin-top: 12px; font-size: 13px; border-radius: 4px; }
+  .note { font-size: 12px; color: #6b7280; margin-top: 8px; }
+  .l2 { background: #fff7ed; border: 1px solid #fed7aa; padding: 8px 12px; font-size: 12px; color: #9a3412; border-radius: 6px; margin-top: 12px; }
+  .kb-q { width: 70%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+  .src { font-size: 11px; color: #6b7280; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>瀚钦OPC财税智能体管理平台</h1>
+  <span class="ver">V0.1.0 开发预览</span>
+  <span class="tag">L2动作仅限人工执行</span>
+</header>
+<nav>
+  <button class="active" data-tab="ingest">票据处理</button>
+  <button data-tab="calendar">征期日历</button>
+  <button data-tab="kb">合规问答</button>
+  <button data-tab="docs">已归档票据</button>
+</nav>
+<main>
+  <div id="ingest" class="panel active">
+    <div class="card">
+      <h3>上传财务资料（演示：粘贴数电票JSON）</h3>
+      <textarea id="payload">{
+  "doc_type": "invoice_eticket",
+  "file_name": "Demo_ETicket_001.json",
+  "invoice": {
+    "invoice_no": "24312000000012345678",
+    "issue_date": "2026-09-18",
+    "seller_name": "Demo_Supplier_01",
+    "buyer_name": "瀚钦科技有限公司",
+    "buyer_tax_no": "91310000DEMO000000X",
+    "amount": 1000.00,
+    "tax": 10.00,
+    "total": 1010.00,
+    "category": "办公用品"
+  }
+}</textarea>
+      <button class="primary" onclick="submitDoc()">提交处理（安检 → 抽取 → 查重 → 校验 → 建议 → 归档）</button>
+      <div class="l2">提示：本平台止步于「处理建议 + 归档」。记账、付款、申报等L2动作由财务人员登录银行/税务系统人工执行，平台不代填任何登录凭证。</div>
+    </div>
+    <div class="card result" id="resultCard" style="display:none">
+      <h3>处理结果</h3>
+      <div id="resultBody"></div>
+    </div>
+  </div>
+
+  <div id="calendar" class="panel">
+    <div class="card">
+      <h3>征期日历与待办（种子数据）</h3>
+      <table id="calTable">
+        <thead><tr><th>周期</th><th>任务</th><th>截止规则</th><th>下次截止</th><th>提醒日</th><th>智能体动作（L0/L1）</th><th>人工动作（L2）</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="note">提前提醒由日历驱动；征期顺延以税务机关公告为准，知识库须同步更新。</div>
+    </div>
+  </div>
+
+  <div id="kb" class="panel">
+    <div class="card">
+      <h3>合规问答（仅从已审核知识库作答，无来源即拒答）</h3>
+      <input class="kb-q" id="kbq" placeholder="例如：数电票需要打印贴凭证吗？" onkeydown="if(event.key==='Enter')askKb()">
+      <button class="primary" onclick="askKb()">提问</button>
+      <div id="kbAnswer" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div id="docs" class="panel">
+    <div class="card">
+      <h3>已归档票据</h3>
+      <table id="docTable">
+        <thead><tr><th>ID</th><th>票号</th><th>建议等级</th><th>状态</th><th>归档时间</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="note">确认操作仅记录审计事件，表示「人工已核对」；不触发任何对外提交。</div>
+    </div>
+  </div>
+</main>
+<script>
+async function submitDoc() {
+  const payload = JSON.parse(document.getElementById('payload').value);
+  const res = await fetch('/api/v1/documents', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  const data = await res.json();
+  const card = document.getElementById('resultCard');
+  const body = document.getElementById('resultBody');
+  card.style.display = 'block';
+  let html = '';
+  (data.steps || []).forEach(s => {
+    html += `<div class="step-row"><span class="badge ${s[1]?'ok':'fail'}">${s[1]?'通过':'拦截'}</span><b>${s[0]}</b><span>${s[2]||''}</span></div>`;
+  });
+  if (data.advice) {
+    html += `<div class="advice"><span class="grade-${data.advice.grade}">建议等级 ${data.advice.grade}</span>　${data.advice.summary}<div class="src">依据：${(data.advice.sources||[]).join('；')}</div></div>`;
+  }
+  if (data.doc_id) html += `<div class="note">已归档：文档#${data.doc_id}，内容哈希 ${data.content_hash.slice(0,16)}…（原件防篡改留痕）</div>`;
+  body.innerHTML = html;
+  loadDocs();
+}
+async function loadCal() {
+  const rows = await (await fetch('/api/v1/calendar')).json();
+  document.querySelector('#calTable tbody').innerHTML = rows.map(r =>
+    `<tr><td>${r.cycle}</td><td>${r.name}</td><td>${r.deadline_rule}</td><td>${r.next_deadline}</td><td>${r.remind_on}</td><td>${r.agent_action}</td><td>${r.human_action}</td></tr>`).join('');
+}
+async function askKb() {
+  const q = document.getElementById('kbq').value;
+  const data = await (await fetch('/api/v1/kb/ask?q=' + encodeURIComponent(q))).json();
+  const conf = data.confidence === 'A' ? 'grade-A' : 'grade-C';
+  document.getElementById('kbAnswer').innerHTML =
+    `<div class="advice"><span class="${conf}">置信度 ${data.confidence}</span>　${data.answer}` +
+    (data.source ? `<div class="src">来源：${data.source}（${data.date}）</div>` : '') + `</div>`;
+}
+async function loadDocs() {
+  const rows = await (await fetch('/api/v1/documents')).json();
+  document.querySelector('#docTable tbody').innerHTML = rows.map(r =>
+    `<tr><td>${r.id}</td><td>${r.invoice_no}</td><td class="grade-${r.grade}">${r.grade}</td><td>${r.status}</td><td>${r.created_at}</td>` +
+    `<td>${r.status==='pending' ? `<button class="primary" style="padding:4px 12px;font-size:12px" onclick="confirmDoc(${r.id})">人工确认</button>` : '—'}</td></tr>`).join('');
+}
+async function confirmDoc(id) {
+  await fetch(`/api/v1/documents/${id}/confirm`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({actor:'财务人员'})});
+  loadDocs();
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById(b.dataset.tab).classList.add('active');
+});
+loadCal(); loadDocs();
+</script>
+</body>
+</html>
