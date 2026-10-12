@@ -11,7 +11,7 @@ ARCHIVE_DIR = DATA_DIR / "archive"
 WEB_DIR = BASE_DIR / "web"
 
 APP_NAME = "瀚钦OPC财税智能体管理平台"
-APP_VERSION = "0.6.0"
+APP_VERSION = "1.0.0"
 
 STORAGE_CONFIG_PATH = BASE_DIR / "config" / "storage_config.json"
 _STORAGE_DEFAULTS = {
