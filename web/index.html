@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>瀚钦OPC财税智能体管理平台 V0.4.0</title>
+<title>瀚钦OPC财税智能体管理平台 V0.5.0</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #1f2937; }
@@ -43,7 +43,7 @@
 <body>
 <header>
   <h1>瀚钦OPC财税智能体管理平台</h1>
-  <span class="ver">V0.4.0 开发预览</span>
+  <span class="ver">V0.5.0 开发预览</span>
   <span class="tag">L2动作仅限人工执行</span>
 </header>
 <nav>
@@ -183,11 +183,16 @@ async function loadCal() {
 }
 async function askKb() {
   const q = document.getElementById('kbq').value;
+  if (!q) return;
   const data = await (await fetch('/api/v1/kb/ask?q=' + encodeURIComponent(q))).json();
   const conf = data.confidence === 'A' ? 'grade-A' : 'grade-C';
-  document.getElementById('kbAnswer').innerHTML =
-    `<div class="advice"><span class="${conf}">置信度 ${data.confidence}</span>　${data.answer}` +
-    (data.source ? `<div class="src">来源：${data.source}（${data.date}）</div>` : '') + `</div>`;
+  let html = `<div class="advice"><span class="${conf}">置信度 ${data.confidence}</span>　${data.answer}`;
+  if (data.basis) html += `<div class="src">依据：${data.basis}</div>`;
+  if (data.condition) html += `<div class="src">适用条件：${data.condition}</div>`;
+  if (data.source) html += `<div class="src">来源：${data.source}（${data.date}，${data.version}，审核：${data.reviewed_by}）</div>`;
+  if (data.score !== undefined) html += `<div class="src">检索匹配分 ${data.score} ｜ 回答模式：${data.mode}</div>`;
+  html += `</div>`;
+  document.getElementById('kbAnswer').innerHTML = html;
 }
 async function loadDocs() {
   const rows = await (await fetch('/api/v1/documents')).json();

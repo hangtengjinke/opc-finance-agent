@@ -1,7 +1,7 @@
 # 瀚钦OPC财税智能体管理平台
 
 > (c) 2026 瀚钦科技有限公司. All rights reserved.
-> V0.4.0 开发预览（MVP 第四增量）｜软件著作权申报名：瀚钦OPC财税智能体管理平台V1.0（冻结后申报）
+> V0.5.0 开发预览（MVP 第五增量）｜软件著作权申报名：瀚钦OPC财税智能体管理平台V1.0（冻结后申报）
 
 本地部署的企业财税智能体 MVP 脚手架，面向小白财务人员，实现《总体建设方案》首期主流程的垂直切片。
 
@@ -21,6 +21,7 @@ python tests/smoke_test.py       # 主流程冒烟测试（5用例）
 python tests/wecom_push_test.py  # 待办推送冒烟测试（6用例）
 python tests/ocr_test.py         # OCR图片票据冒烟测试（8用例）
 python tests/paddle_adapter_test.py # PaddleOCR适配器冒烟测试（9用例）
+python tests/kb_test.py          # RAG真检索问答冒烟测试（9用例）
 ```
 
 ## 目录结构
@@ -37,17 +38,21 @@ opc-finance-agent/
 │   ├── wecom.py       # 企业微信待办卡片推送（字段白名单+脱敏+dry-run+去重）
 │   ├── ocr.py         # OCR图片票据接入层（引擎配置解析+置信度门禁+人工核验回填）
 │   ├── paddle_engine.py # PaddleOCR本地引擎适配器（生产通道，字段锚定纯函数）
-│   ├── kb.py          # 合规问答（无来源拒答）
+│   ├── kb.py          # RAG问答：BM25真检索+审签门禁+无来源拒答+C级守门
+│   ├── kb_llm.py      # Ollama本地大模型回答适配器（宕机回退抽取式）
 │   └── settings.py    # 配置与主数据加载
 ├── config/wecom_config.json # 推送配置（webhook留空即dry-run，D3纪律）
 ├── config/ocr_config.json   # OCR引擎开关（demo/paddle，部署PaddleOCR后切换）
-├── deploy/                  # OCR引擎部署指南 + requirements-ocr.txt（部署机专用）
+├── config/kb_config.json    # RAG回答模式（extractive/llm，min_score阈值）
+├── config/kb_docs/          # 知识库源文件（一手来源+审签元数据；未签不索引）
+├── deploy/                  # OCR/RAG部署指南 + requirements-ocr.txt（部署机专用）
 ├── tools/ocr_selftest.py    # OCR引擎端到端自检（部署验收用）
 ├── web/index.html     # 单页操作界面（截图库素材来源）
 ├── tests/smoke_test.py # 主流程冒烟测试
 ├── tests/wecom_push_test.py # 推送通道冒烟测试
 ├── tests/ocr_test.py   # OCR图片票据冒烟测试
 ├── tests/paddle_adapter_test.py # PaddleOCR适配器冒烟测试
+├── tests/kb_test.py    # RAG真检索问答冒烟测试
 └── docs/screenshots/  # 操作手册截图库（D4纪律）
 ```
 
@@ -67,7 +72,10 @@ opc-finance-agent/
   `config/ocr_config.json` 的 engine 切为 paddle 即启用，代码零改动；
   开发机未装引擎时真实图片得到「引擎未接入」的诚实回答，不编造字段
 - PostgreSQL 分区化存储 + MinIO 对象存储（当前为SQLite/本地目录）
-- 本地大模型推理与RAG检索（当前为演示知识库）
+- RAG生成式回答**安装**：BM25检索与抽取式回答已内置，部署服务器按
+  `deploy/RAG问答部署指南.md` 安装 Ollama 并拉取模型后，把
+  `config/kb_config.json` 的 answer_mode 切为 llm 即启用；模型宕机自动回退抽取式。
+  上万段落规模时再评估本地向量模型（BM25Index接口预留替换位）
 - 企业微信真实webhook启用（当前dry-run模式已验证消息体格式，启用仅需在config/wecom_config.json填入群机器人webhook并纳入外联清单管理）
 - 等保定级、单点登录、字段级加密遮蔽
 

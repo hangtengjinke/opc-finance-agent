@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from . import db
 from .calendar_seed import get_calendar
-from .kb import ask as kb_ask
+from .kb import ask as kb_ask, kb_inventory, search_kb
 from .ocr import (demo_ocr_output, engine_status, make_demo_png,
                   process_image_document, verify_ocr_document)
 from .pipeline import process_document
@@ -203,6 +203,19 @@ def list_cards():
 @app.get("/api/v1/kb/ask")
 def ask_kb(q: str):
     return kb_ask(q)
+
+
+@app.get("/api/v1/kb/search")
+def kb_search(q: str, top_k: int = 3):
+    """检索明细（透明化）：评分排序+命中词+段落ID，供审计与界面展示。"""
+    hits, q_tokens = search_kb(q, top_k)
+    return {"query_tokens": q_tokens, "hits": hits}
+
+
+@app.get("/api/v1/kb/documents")
+def kb_docs():
+    """知识库清单：已索引文档（含审签人）与被门禁排除的文件。"""
+    return kb_inventory()
 
 
 @app.get("/api/v1/audit")
