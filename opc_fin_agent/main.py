@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """FastAPI 网关：对外唯一入口，仅暴露L0/L1能力，不提供任何L2自动化接口。"""
+import base64
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -8,6 +10,8 @@ from pydantic import BaseModel
 from . import db
 from .calendar_seed import get_calendar
 from .kb import ask as kb_ask
+from .ocr import (demo_ocr_output, make_demo_png, process_image_document,
+                  verify_ocr_document)
 from .pipeline import process_document
 from .settings import APP_NAME, APP_VERSION, WEB_DIR, load_master_data
 from .wecom import due_tasks, push_due_reminders
@@ -18,6 +22,19 @@ app = FastAPI(title=APP_NAME, version=APP_VERSION)
 class ConfirmBody(BaseModel):
     actor: str = "demo_user"
     note: str = ""
+
+
+class ImageDocBody(BaseModel):
+    file_name: str = "Demo_Image.png"
+    image_base64: str
+    ocr_output: dict = None
+    engine: str = "demo"
+    actor: str = "demo_user"
+
+
+class VerifyOcrBody(BaseModel):
+    actor: str = "财务人员"
+    invoice: dict
 
 
 @app.get("/")
@@ -79,6 +96,66 @@ def confirm(doc_id: int, body: ConfirmBody):
 @app.get("/api/v1/calendar")
 def calendar():
     return get_calendar()
+
+
+@app.post("/api/v1/documents/image")
+def upload_image(body: ImageDocBody):
+    """OCR图片票据主流程：图片安检→查重→OCR→置信度门禁→规则校验→归档/待核验。"""
+    conn = db.get_conn()
+    try:
+        image_bytes = base64.b64decode(body.image_base64)
+        return process_image_document(
+            conn, body.file_name, image_bytes, body.ocr_output,
+            body.actor, body.engine)
+    except Exception as e:
+        raise HTTPException(400, f"图片处理失败：{e}")
+    finally:
+        conn.close()
+
+
+@app.post("/api/v1/documents/{doc_id}/verify_ocr")
+def verify_ocr(doc_id: int, body: VerifyOcrBody):
+    """人工核验回填：OCR待核验文档由财务人员核对修正字段后提交。"""
+    conn = db.get_conn()
+    try:
+        row = conn.execute(
+            "SELECT id, status FROM documents WHERE id=?", (doc_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "文档不存在")
+        if row["status"] != "pending_verification":
+            raise HTTPException(400, "仅待核验(pending_verification)文档需核验回填")
+        return verify_ocr_document(conn, doc_id, body.invoice, body.actor)
+    finally:
+        conn.close()
+
+
+@app.get("/api/v1/documents/{doc_id}")
+def get_doc(doc_id: int):
+    """单文档详情（含OCR字段置信度），供人工核验界面预填。"""
+    conn = db.get_conn()
+    try:
+        row = conn.execute(
+            "SELECT id, invoice_no, grade, status, payload, fields, created_at"
+            " FROM documents WHERE id=?", (doc_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "文档不存在")
+        return dict(row)
+    finally:
+        conn.close()
+
+
+@app.get("/api/v1/ocr/demo")
+def ocr_demo(quality: str = "clear"):
+    """生成演示数据流（合成图片+确定性OCR输出），供界面演示与测试使用。"""
+    if quality not in ("clear", "blur"):
+        raise HTTPException(400, "quality仅支持clear/blur")
+    width = 800 if quality == "clear" else 640
+    png = make_demo_png(width=width, height=600)
+    return {
+        "file_name": f"Demo_Image_{'清晰' if quality == 'clear' else '模糊'}.png",
+        "image_base64": base64.b64encode(png).decode("ascii"),
+        "ocr_output": demo_ocr_output(quality),
+    }
 
 
 @app.get("/api/v1/notifications/pending")

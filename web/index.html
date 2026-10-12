@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>瀚钦OPC财税智能体管理平台 V0.1.0</title>
+<title>瀚钦OPC财税智能体管理平台 V0.3.0</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #1f2937; }
@@ -43,11 +43,12 @@
 <body>
 <header>
   <h1>瀚钦OPC财税智能体管理平台</h1>
-  <span class="ver">V0.2.0 开发预览</span>
+  <span class="ver">V0.3.0 开发预览</span>
   <span class="tag">L2动作仅限人工执行</span>
 </header>
 <nav>
   <button class="active" data-tab="ingest">票据处理</button>
+  <button data-tab="ocr">OCR票据</button>
   <button data-tab="calendar">征期日历</button>
   <button data-tab="notify">待办推送</button>
   <button data-tab="kb">合规问答</button>
@@ -78,6 +79,27 @@
     <div class="card result" id="resultCard" style="display:none">
       <h3>处理结果</h3>
       <div id="resultBody"></div>
+    </div>
+  </div>
+
+  <div id="ocr" class="panel">
+    <div class="card">
+      <h3>OCR图片票据（本地闭环：图片不出内网，置信度不足绝不硬定级）</h3>
+      <button class="primary" onclick="loadDemoOcr('clear')">载入清晰演示票</button>
+      <button class="primary" onclick="loadDemoOcr('blur')">载入模糊演示票（触发待核验）</button>
+      <input type="file" id="ocrFile" accept="image/png,image/jpeg" style="margin:10px 0 0 12px">
+      <button class="primary" onclick="uploadRealOcr()">上传真实图片</button>
+      <div class="note" style="margin-top:10px">演示通道使用合成图片+确定性OCR输出；真实图片在本地OCR引擎（PaddleOCR适配位）接入前将得到「引擎未接入」的诚实回答，不编造字段。</div>
+    </div>
+    <div class="card result" id="ocrResultCard" style="display:none">
+      <h3>OCR处理结果</h3>
+      <div id="ocrResultBody"></div>
+    </div>
+    <div class="card" id="verifyCard" style="display:none">
+      <h3>人工核验回填（待核验文档：<span id="verifyDocId"></span>）</h3>
+      <div class="note" style="margin-bottom:10px">财务人员对照原件核对/修正以下字段后提交，字段自此以人工值为准，再走规则校验定级。</div>
+      <textarea id="verifyFields" style="height:220px"></textarea>
+      <button class="primary" onclick="submitVerify()">提交核验（人工值为准）</button>
     </div>
   </div>
 
@@ -175,6 +197,79 @@ async function loadDocs() {
 }
 async function confirmDoc(id) {
   await fetch(`/api/v1/documents/${id}/confirm`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({actor:'财务人员'})});
+  loadDocs();
+}
+function confBadge(f) {
+  const c = f.confidence;
+  const cls = c >= 0.9 ? 'ok' : 'fail';
+  const label = c >= 0.9 ? '可信' : '低置信';
+  return `<span class="badge ${cls}">${label} ${c.toFixed(2)}</span>`;
+}
+function renderOcrResult(data) {
+  const card = document.getElementById('ocrResultCard');
+  const body = document.getElementById('ocrResultBody');
+  card.style.display = 'block';
+  let html = '';
+  (data.steps || []).forEach(s => {
+    html += `<div class="step-row"><span class="badge ${s[1]?'ok':'fail'}">${s[1]?'通过':'拦截'}</span><b>${s[0]}</b><span>${s[2]||''}</span></div>`;
+  });
+  const fw = data.fields_with_conf || data.fields;
+  if (fw && fw.invoice_no && fw.invoice_no.confidence !== undefined) {
+    html += '<div style="margin-top:10px"><b style="font-size:13px">OCR字段与置信度：</b></div>';
+    for (const [k, v] of Object.entries(fw)) {
+      html += `<div class="step-row">${confBadge(v)}<b>${k}</b><span>${v.value ?? ''}</span></div>`;
+    }
+  }
+  if (data.status === 'pending_verification') {
+    html += `<div class="advice"><span class="grade-C">待人工核验</span>　低置信度字段：${(data.low_confidence_fields||[]).join('、')}——系统不给不确定的字段定级，请对照原件核验回填。</div>`;
+  } else if (data.status === 'engine_not_configured') {
+    html += `<div class="advice"><span class="grade-C">引擎未接入</span>　本地OCR引擎接入前，真实图片不做任何识别假设。</div>`;
+  } else if (data.advice) {
+    html += `<div class="advice"><span class="grade-${data.advice.grade}">建议等级 ${data.advice.grade}</span>　${data.advice.summary}</div>`;
+  }
+  if (data.doc_id) html += `<div class="note">文档#${data.doc_id}，图片哈希 ${String(data.content_hash).slice(0,16)}…，原件已不可变归档</div>`;
+  body.innerHTML = html;
+  if (data.status === 'pending_verification') showVerifyForm(data.doc_id);
+  else document.getElementById('verifyCard').style.display = 'none';
+  loadDocs();
+}
+async function loadDemoOcr(q) {
+  const demo = await (await fetch('/api/v1/ocr/demo?quality=' + q)).json();
+  const res = await fetch('/api/v1/documents/image', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({file_name: demo.file_name, image_base64: demo.image_base64, ocr_output: demo.ocr_output})});
+  renderOcrResult(await res.json());
+}
+async function uploadRealOcr() {
+  const f = document.getElementById('ocrFile').files[0];
+  if (!f) { alert('请先选择图片文件'); return; }
+  const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result.split(',')[1]); fr.readAsDataURL(f); });
+  const res = await fetch('/api/v1/documents/image', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({file_name: f.name, image_base64: b64, ocr_output: null})});
+  renderOcrResult(await res.json());
+}
+async function showVerifyForm(docId) {
+  const doc = await (await fetch('/api/v1/documents/' + docId)).json();
+  const prefill = {};
+  const flds = JSON.parse(doc.fields || '{}');
+  if (flds.invoice_no && flds.invoice_no.confidence !== undefined) {
+    for (const [k, v] of Object.entries(flds)) prefill[k] = v.value;
+  } else {
+    Object.assign(prefill, flds);
+  }
+  document.getElementById('verifyDocId').textContent = '#' + docId;
+  document.getElementById('verifyFields').value = JSON.stringify(prefill, null, 2);
+  document.getElementById('verifyCard').style.display = 'block';
+}
+async function submitVerify() {
+  const docId = document.getElementById('verifyDocId').textContent.replace('#', '');
+  const invoice = JSON.parse(document.getElementById('verifyFields').value);
+  const res = await fetch(`/api/v1/documents/${docId}/verify_ocr`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({actor: '财务人员', invoice})});
+  const data = await res.json();
+  let html = '';
+  if (data.advice) html = `<div class="advice"><span class="grade-${data.advice.grade}">核验后建议等级 ${data.advice.grade}</span>　${data.advice.summary}<div class="src">依据：${(data.advice.sources||[]).join('；')}</div></div>`;
+  document.getElementById('ocrResultBody').innerHTML = html;
+  document.getElementById('verifyCard').style.display = 'none';
   loadDocs();
 }
 async function pushCards() {
