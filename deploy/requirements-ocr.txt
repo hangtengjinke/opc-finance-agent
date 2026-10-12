@@ -1,0 +1,12 @@
+# OCR引擎依赖（仅在部署服务器安装，开发机不需要）
+# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+#
+# 注意：
+# 1. PaddleOCR 当前支持 Python 3.8-3.12，部署环境请用 3.10-3.12 的独立 venv
+#    （开发环境3.13仅跑demo引擎与全量测试，不受影响）；
+# 2. 国内服务器建议走镜像源：
+#    pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r deploy/requirements-ocr.txt
+# 3. 版本以部署时 PaddleOCR 官方兼容矩阵为准；锁定版本后不要随意升级，
+#    升级后必须重跑 tools/ocr_selftest.py 与 tests/ 全量回归。
+paddlepaddle==2.6.2
+paddleocr==2.7.3

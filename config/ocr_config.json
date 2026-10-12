@@ -1,0 +1,13 @@
+{
+  "_meta": "OCR引擎配置（软著纪律D3：本文件不含任何密钥）。部署PaddleOCR后把engine改为paddle即可启用本地真实识别，管道与API代码零改动；回滚改回demo即可",
+  "engine": "demo",
+  "paddle": {
+    "lang": "ch",
+    "use_angle_cls": true,
+    "use_gpu": false,
+    "enable_mkldnn": true,
+    "cpu_threads": 8,
+    "max_side_len": 1600,
+    "show_log": false
+  }
+}

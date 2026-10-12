@@ -19,7 +19,7 @@ import zlib
 from .db import record_event
 from .rules import run_rules
 from .pipeline import build_advice
-from .settings import ARCHIVE_DIR, load_master_data
+from .settings import ARCHIVE_DIR, BASE_DIR, load_master_data
 
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 MIN_WIDTH = 400
@@ -100,6 +100,47 @@ class DemoOcrEngine:
 ENGINE_REGISTRY = {"demo": DemoOcrEngine()}
 
 
+def load_ocr_config():
+    """加载OCR引擎配置（config/ocr_config.json；缺省返回空配置走demo引擎）。"""
+    path = BASE_DIR / "config" / "ocr_config.json"
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def get_engine(engine_key=None):
+    """引擎解析：engine_key为空或'auto'时取配置文件engine项。
+
+    paddle为惰性加载——未安装paddleocr时模块可正常导入，
+    识别请求才触发OcrNotConfigured（诚实回答，附安装指引）。
+    """
+    if not engine_key or engine_key == "auto":
+        engine_key = load_ocr_config().get("engine", "demo")
+    if engine_key == "demo":
+        return ENGINE_REGISTRY["demo"]
+    if engine_key == "paddle":
+        from .paddle_engine import PaddleOcrEngine  # 惰性导入
+        return PaddleOcrEngine(load_ocr_config().get("paddle", {}))
+    raise KeyError(f"未知OCR引擎：{engine_key}（支持demo/paddle/auto）")
+
+
+def engine_status():
+    """引擎状态探针（部署检查表用）：配置项 + paddleocr是否已安装。"""
+    installed = False
+    try:
+        import paddleocr  # noqa: F401
+        installed = True
+    except Exception:
+        installed = False
+    return {
+        "configured": load_ocr_config().get("engine", "demo"),
+        "paddle_installed": installed,
+        "hint": "paddle已安装且engine=paddle时，图片票据走真实本地识别" if installed
+        else "paddle未安装，真实图片走engine_not_configured诚实回退；演示数据流可用",
+    }
+
+
 # ---------------------------------------------------------------- 主流程
 
 REQUIRED_OCR_FIELDS = [
@@ -109,8 +150,12 @@ REQUIRED_OCR_FIELDS = [
 
 
 def process_image_document(conn, file_name, image_bytes, ocr_output=None,
-                           actor="demo_user", engine_key="demo"):
-    """OCR图片主流程：图片安检→查重→OCR识别→置信度门禁→规则校验→归档/待核验。"""
+                           actor="demo_user", engine_key=None):
+    """OCR图片主流程：图片安检→查重→OCR识别→置信度门禁→规则校验→归档/待核验。
+
+    engine_key=None/'auto'时按config/ocr_config.json的engine配置解析
+    （部署PaddleOCR后改配置即启用，代码零改动）。
+    """
     steps = []
 
     def step(name, passed, msg):
@@ -145,9 +190,9 @@ def process_image_document(conn, file_name, image_bytes, ocr_output=None,
         return {"status": "blocked", "steps": steps, "content_hash": img_hash}
     step("查重", True, "通过（图片哈希唯一）")
 
-    # 3. OCR识别
+    # 3. OCR识别（引擎按配置解析：demo演示流 / paddle本地引擎）
     try:
-        ocr = ENGINE_REGISTRY[engine_key].recognize(image_bytes, ocr_output)
+        ocr = get_engine(engine_key).recognize(image_bytes, ocr_output)
     except OcrNotConfigured as e:
         step("OCR识别", False, str(e))
         return {"status": "engine_not_configured", "steps": steps,

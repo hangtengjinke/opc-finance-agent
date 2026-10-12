@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from . import db
 from .calendar_seed import get_calendar
 from .kb import ask as kb_ask
-from .ocr import (demo_ocr_output, make_demo_png, process_image_document,
-                  verify_ocr_document)
+from .ocr import (demo_ocr_output, engine_status, make_demo_png,
+                  process_image_document, verify_ocr_document)
 from .pipeline import process_document
 from .settings import APP_NAME, APP_VERSION, WEB_DIR, load_master_data
 from .wecom import due_tasks, push_due_reminders
@@ -28,7 +28,7 @@ class ImageDocBody(BaseModel):
     file_name: str = "Demo_Image.png"
     image_base64: str
     ocr_output: dict = None
-    engine: str = "demo"
+    engine: str = "auto"  # auto=按config/ocr_config.json解析（demo/paddle）
     actor: str = "demo_user"
 
 
@@ -49,6 +49,7 @@ def meta():
         "app": APP_NAME, "version": APP_VERSION,
         "company": md["company"]["name"],
         "taxpayer_type": md["company"]["taxpayer_type"],
+        "ocr_engine": engine_status(),
         "l2_note": "付款、申报、缴税、记账、开票等L2动作无自动化接口，须由财务人员人工执行",
     }
 
