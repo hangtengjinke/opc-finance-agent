@@ -1,6 +1,6 @@
 # OCR 引擎部署指南（PaddleOCR 本地适配）
 
-> 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+> OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 > 适用版本：平台 v0.4.0+（`opc_fin_agent/paddle_engine.py` 已内置适配器）
 
 ## 一、总体原则

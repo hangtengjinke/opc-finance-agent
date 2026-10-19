@@ -1,5 +1,5 @@
 # OCR引擎依赖（仅在部署服务器安装，开发机不需要）
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 #
 # 注意：
 # 1. PaddleOCR 当前支持 Python 3.8-3.12，部署环境请用 3.10-3.12 的独立 venv

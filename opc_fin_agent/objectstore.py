@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """对象存储门面：原件归档双后端（local 本地目录 / MinIO），零改动切换。
 
 对应《阶段0技术规格》fin-originals 桶规范：

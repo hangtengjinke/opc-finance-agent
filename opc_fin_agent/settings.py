@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """全局配置与企业主数据加载（Demo占位，软著纪律D3）。"""
 import json
 from pathlib import Path
@@ -10,8 +10,8 @@ DATA_DIR = BASE_DIR / "data"
 ARCHIVE_DIR = DATA_DIR / "archive"
 WEB_DIR = BASE_DIR / "web"
 
-APP_NAME = "瀚钦OPC财税智能体管理平台"
-APP_VERSION = "1.0.0"
+APP_NAME = "OPC创业财税助手"
+APP_VERSION = "1.1"
 
 STORAGE_CONFIG_PATH = BASE_DIR / "config" / "storage_config.json"
 _STORAGE_DEFAULTS = {

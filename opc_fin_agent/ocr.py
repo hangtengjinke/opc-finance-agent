@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """OCR图片票据接入层（L1能力，对应阶段0技术规格接口IF-04适配点）。
 
 四条设计约束：

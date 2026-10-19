@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """OCR引擎部署自检：用一张真实票据图片验证PaddleOCR端到端可用。
 
 用法（部署服务器上，激活装好paddleocr的venv后）：

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """冒烟测试：企业微信待办卡片推送通道。
 
 覆盖：字段白名单、防御性脱敏、提醒窗口判定、去重推送、dry-run落盘。

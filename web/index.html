@@ -3,25 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>瀚钦OPC财税智能体管理平台 V1.0</title>
+<title>OPC创业财税助手 v1.1</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #1f2937; }
-  header { background: #1e3a5f; color: #fff; padding: 14px 28px; display: flex; align-items: baseline; gap: 14px; }
-  header h1 { font-size: 18px; }
+  header { background: #1e3a5f; color: #fff; padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { font-size: 17px; }
   header .ver { font-size: 12px; opacity: .8; }
-  header .tag { margin-left: auto; font-size: 12px; background: #c0392b; padding: 3px 10px; border-radius: 10px; }
-  nav { display: flex; gap: 4px; background: #fff; padding: 8px 24px 0; border-bottom: 2px solid #e5e7eb; }
-  nav button { border: none; background: none; padding: 10px 18px; font-size: 14px; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; }
+  header .tag { margin-left: auto; font-size: 12px; background: #c0392b; padding: 4px 12px; border-radius: 12px; }
+  nav { display: flex; gap: 2px; background: #fff; padding: 8px 20px 0; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap; }
+  nav button { border: none; background: none; padding: 10px 14px; font-size: 14px; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; }
   nav button.active { color: #1e3a5f; font-weight: bold; border-bottom-color: #1e3a5f; }
-  main { padding: 22px 28px; max-width: 1180px; }
+  main { padding: 18px 24px; max-width: 1180px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
-  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; }
-  .card h3 { font-size: 15px; margin-bottom: 12px; color: #1e3a5f; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .card h3 { font-size: 15px; margin-bottom: 10px; color: #1e3a5f; }
+  .card h3 .q, .inline-q .q { font-weight: normal; }
+  .q { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background: #e2e8f0; color: #1e3a5f; font-size: 12px; cursor: pointer; margin-left: 4px; vertical-align: middle; }
   textarea { width: 100%; height: 150px; font-family: Consolas, monospace; font-size: 12px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-  button.primary { background: #1e3a5f; color: #fff; border: none; padding: 9px 22px; border-radius: 6px; font-size: 14px; cursor: pointer; margin-top: 10px; }
+  button { font-size: 14px; cursor: pointer; }
+  button.primary { background: #1e3a5f; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; }
   button.primary:hover { background: #2c5282; }
+  button.big { font-size: 16px; padding: 14px 26px; min-height: 48px; }
+  button.ghost { background: #fff; color: #1e3a5f; border: 1px solid #1e3a5f; padding: 10px 18px; border-radius: 8px; }
+  button.green { background: #047857; color: #fff; border: none; padding: 14px 30px; border-radius: 10px; font-size: 17px; font-weight: bold; }
+  button.green:hover { background: #065f46; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; }
   th { background: #f1f5f9; color: #334155; }
@@ -31,34 +38,229 @@
   .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
   .badge.ok { background: #ecfdf5; color: #047857; }
   .badge.fail { background: #fef2f2; color: #b91c1c; }
-  .result { margin-top: 14px; }
+  .result { margin-top: 12px; }
   .step-row { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px dashed #e5e7eb; font-size: 13px; }
   .advice { background: #f8fafc; border-left: 4px solid #1e3a5f; padding: 12px 14px; margin-top: 12px; font-size: 13px; border-radius: 4px; }
   .note { font-size: 12px; color: #6b7280; margin-top: 8px; }
   .l2 { background: #fff7ed; border: 1px solid #fed7aa; padding: 8px 12px; font-size: 12px; color: #9a3412; border-radius: 6px; margin-top: 12px; }
-  .kb-q { width: 70%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+  .kb-q { width: 70%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
   .src { font-size: 11px; color: #6b7280; margin-top: 6px; }
+  /* 工作台 */
+  .topbar { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .co-name { font-size: 17px; font-weight: bold; color: #1e3a5f; }
+  .co-type { font-size: 13px; color: #475569; }
+  .tax-badge { font-size: 13px; padding: 6px 14px; border-radius: 14px; font-weight: bold; }
+  .tax-badge.ok { background: #ecfdf5; color: #047857; }
+  .tax-badge.warn { background: #fffbeb; color: #b45309; }
+  .tax-badge.danger { background: #fef2f2; color: #b91c1c; }
+  .red-line { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .dash-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; cursor: pointer; transition: box-shadow .15s; }
+  .dash-item:hover { box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+  .dash-item .big { font-size: 30px; font-weight: bold; }
+  .dash-item .label { font-size: 13px; color: #475569; margin-top: 4px; }
+  .dash-item .hint { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+  .color-green { color: #047857; }
+  .color-yellow { color: #b45309; }
+  .color-red { color: #b91c1c; }
+  .steps-3 { display: flex; gap: 12px; margin: 14px 0; }
+  .steps-3 .s3 { flex: 1; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; }
+  .steps-3 .s3 .num { width: 34px; height: 34px; line-height: 34px; border-radius: 50%; background: #1e3a5f; color: #fff; font-weight: bold; margin: 0 auto 8px; font-size: 16px; }
+  .steps-3 .s3 .t { font-size: 15px; font-weight: bold; }
+  .steps-3 .s3 .d { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  .recent-list .recent-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #e5e7eb; }
+  .recent-list .recent-row:last-child { border-bottom: none; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .dot.green { background: #047857; } .dot.yellow { background: #eab308; } .dot.red { background: #ef4444; }
+  .recent-list .amt { font-size: 16px; font-weight: bold; margin-left: auto; }
+  /* 三步向导 */
+  .wizard-head { display: flex; gap: 6px; margin-bottom: 14px; }
+  .wizard-head .ws { flex: 1; text-align: center; padding: 10px 0; border-radius: 8px; background: #e2e8f0; color: #64748b; font-size: 14px; }
+  .wizard-head .ws.active { background: #1e3a5f; color: #fff; font-weight: bold; }
+  .dropzone { border: 2px dashed #94a3b8; border-radius: 12px; padding: 34px 20px; text-align: center; color: #64748b; cursor: pointer; background: #f8fafc; }
+  .dropzone.hover { border-color: #1e3a5f; background: #eff6ff; }
+  .dropzone .dz-big { font-size: 18px; color: #1e3a5f; font-weight: bold; }
+  .progress-steps { display: flex; gap: 6px; margin: 8px 0 14px; }
+  .progress-steps .ps { flex: 1; text-align: center; padding: 10px 4px; border-radius: 8px; background: #e2e8f0; color: #94a3b8; font-size: 13px; transition: all .3s; }
+  .progress-steps .ps.on { background: #1e3a5f; color: #fff; font-weight: bold; }
+  .progress-steps .ps.done { background: #047857; color: #fff; }
+  .result-card { border-radius: 12px; padding: 16px 18px; margin-top: 12px; border: 1px solid; }
+  .result-card.green { background: #ecfdf5; border-color: #6ee7b7; }
+  .result-card.yellow { background: #fffbeb; border-color: #fcd34d; }
+  .result-card.red { background: #fef2f2; border-color: #fca5a5; }
+  .result-card h4 { font-size: 16px; margin-bottom: 8px; }
+  .result-card .field { margin: 4px 0; font-size: 14px; }
+  .confirm-box { margin-top: 16px; text-align: center; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
+  /* 引导浮层 */
+  .onboard-mask { position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 100; display: none; }
+  .onboard-mask.show { display: flex; align-items: center; justify-content: center; }
+  .onboard-card { background: #fff; border-radius: 14px; width: 460px; max-width: 92vw; padding: 24px; position: relative; }
+  .onboard-skip { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #94a3b8; font-size: 13px; cursor: pointer; }
+  .onboard-dots { text-align: center; margin: 14px 0 10px; }
+  .onboard-dots span { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #cbd5e1; margin: 0 4px; }
+  .onboard-dots span.on { background: #1e3a5f; }
+  .onboard-body { min-height: 90px; font-size: 15px; line-height: 1.7; padding: 6px 4px; }
+  .onboard-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  /* 术语气泡 */
+  .tip-bubble { position: fixed; z-index: 200; background: #1e3a5f; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; max-width: 260px; display: none; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+  .tip-bubble b { display: block; margin-bottom: 4px; }
+  /* 校验与自愈 */
+  .err-input { border: 2px solid #ef4444 !important; background: #fef2f2 !important; }
+  .ok-input { border: 2px solid #10b981 !important; }
+  .err-box { border: 1px solid #fca5a5; background: #fef2f2; color: #b91c1c; padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
+  .retry-note { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; padding: 12px 16px; border-radius: 10px; margin-top: 12px; font-size: 13px; line-height: 1.6; }
+  .retry-note ol { margin: 6px 0 0 18px; }
+  /* 使用说明 */
+  .guide-step { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e5e7eb; }
+  .guide-step .icon { width: 44px; height: 44px; border-radius: 10px; background: #eff6ff; color: #1e3a5f; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .faq-item { padding: 12px 0; border-bottom: 1px dashed #e5e7eb; }
+  .faq-item details { cursor: pointer; }
+  .faq-item summary { font-weight: bold; font-size: 14px; color: #1e3a5f; }
+  .faq-item p { margin-top: 8px; font-size: 14px; line-height: 1.7; color: #374151; }
+  .hidden { display: none !important; }
+  /* 征期日历色块（V1.1 P2） */
+  .cal-list { display: flex; flex-direction: column; gap: 12px; }
+  .cal-card { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; }
+  .cal-card .cal-days { min-width: 96px; text-align: center; padding: 10px 8px; border-radius: 12px; color: #fff; font-weight: bold; flex-shrink: 0; }
+  .cal-card .cal-days .num { display: block; font-size: 30px; line-height: 1.1; }
+  .cal-card .cal-days .unit { font-size: 12px; font-weight: normal; }
+  .cal-card.ok .cal-days { background: #047857; }
+  .cal-card.warn .cal-days { background: #d97706; }
+  .cal-card.danger .cal-days { background: #dc2626; }
+  .cal-card .cal-info { flex: 1; min-width: 0; }
+  .cal-card .cal-title { font-size: 15px; font-weight: bold; color: #1e3a5f; }
+  .cal-card .cal-title .badge { background: #e2e8f0; color: #334155; margin-left: 4px; }
+  .cal-card .cal-meta { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  .cal-card .cal-deadline { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .cal-card .cal-action { font-size: 13px; margin-top: 6px; line-height: 1.6; }
+  .cal-card.ok .cal-action { color: #065f46; }
+  .cal-card.warn .cal-action { color: #92400e; }
+  .cal-card.danger .cal-action { color: #b91c1c; }
+  /* 常见问题快捷入口（V1.1 P2） */
+  .qa-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .qa-chip { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a5f; padding: 8px 12px; border-radius: 16px; font-size: 13px; cursor: pointer; }
+  .qa-chip:hover { background: #dbeafe; }
+  /* 推送模式与三色反馈（V1.1 P2） */
+  .push-mode-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; border: 1px solid; }
+  .push-mode-bar.dryrun { background: #f1f5f9; border-color: #cbd5e1; color: #475569; }
+  .push-mode-bar.real { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+  .push-mode-bar .mode-tag { font-weight: bold; padding: 2px 10px; border-radius: 10px; color: #fff; font-size: 12px; }
+  .push-mode-bar.dryrun .mode-tag { background: #64748b; }
+  .push-mode-bar.real .mode-tag { background: #d97706; }
+  .push-switch { background: none; border: 1px solid #94a3b8; color: #334155; padding: 4px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+  .push-box { border-radius: 10px; padding: 12px 14px; margin-top: 12px; font-size: 13px; border: 1px solid; }
+  .push-box.ok { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+  .push-box.warn { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+  .push-box.fail { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+  .push-box .push-row { display: flex; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px dashed rgba(0,0,0,.08); }
+  .push-box .push-row:last-child { border-bottom: none; }
+  .push-box .push-row b { flex: 1; min-width: 0; }
+  /* 移动端响应式（V1.1 P2）：<768px 按钮全宽、卡片单列、导航横向滚动 */
+  @media (max-width: 768px) {
+    header { padding: 10px 14px; }
+    header .tag { display: none; }
+    nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    nav button { flex-shrink: 0; padding: 10px 12px; }
+    main { padding: 12px; }
+    .dash-grid { grid-template-columns: 1fr; }
+    .steps-3 { flex-direction: column; }
+    .wizard-head { flex-wrap: wrap; }
+    .wizard-head .ws { font-size: 12px; padding: 8px 2px; }
+    .kb-q { width: 100% !important; }
+    .topbar { gap: 8px; }
+    .card button.primary, .card button.green, .card button.ghost, .card button.big { width: 100%; }
+    td button { width: auto !important; padding: 5px 10px !important; }
+    .cal-card { flex-wrap: wrap; }
+    .dropzone { padding: 22px 14px; }
+    .onboard-card { padding: 18px; }
+    .guide-step { align-items: flex-start; }
+    .qa-chip { width: 100%; text-align: left; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>瀚钦OPC财税智能体管理平台</h1>
-  <span class="ver">V1.0 功能冻结版</span>
-  <span class="tag">L2动作仅限人工执行</span>
+  <h1>OPC创业财税助手</h1>
+  <span class="ver">v1.1 小白友好版</span>
+  <span class="tag">系统只整理和提醒，付款申报必须人工操作</span>
 </header>
 <nav>
-  <button class="active" data-tab="ingest">票据处理</button>
+  <button data-tab="dash">工作台</button>
+  <button data-tab="ingest">票据处理</button>
   <button data-tab="ocr">OCR票据</button>
   <button data-tab="calendar">征期日历</button>
   <button data-tab="notify">待办推送</button>
   <button data-tab="kb">合规问答</button>
   <button data-tab="docs">已归档票据</button>
+  <button data-tab="guide">使用说明</button>
 </nav>
 <main>
-  <div id="ingest" class="panel active">
+
+  <!-- ① 工作台（默认落地） -->
+  <div id="dash" class="panel active">
+    <div class="topbar">
+      <span class="co-name" id="coName">—</span>
+      <span class="co-type" id="coType">—</span>
+      <span class="tax-badge" id="taxBadge" style="margin-left:auto">—</span>
+    </div>
+    <div class="red-line">🔒 <b>记住一件事：</b>本系统只负责整理票据、给建议、做提醒。<b>付款、申报、缴税、开票</b>必须由你（或你的会计）亲自操作，系统不会替你提交任何东西。</div>
+    <div class="dash-grid" id="todoGrid">
+      <div class="dash-item" onclick="jump('docs')" id="todoConfirm">
+        <div class="big color-yellow" id="confirmNum">—</div>
+        <div class="label">张票据待确认（机器没认准或等你点头的）</div>
+        <div class="hint">点我去看看 →</div>
+      </div>
+      <div class="dash-item" onclick="jump('calendar')" id="todoCountdown">
+        <div class="big color-green" id="countdownNum">—</div>
+        <div class="label" id="countdownLabel">最近要办的税期</div>
+        <div class="hint">点我看征期日历 →</div>
+      </div>
+      <div class="dash-item" onclick="jumpAndPush('notify')" id="todoPush">
+        <div class="big color-red" id="pushNum">—</div>
+        <div class="label">条待办还没推送</div>
+        <div class="hint">点我直达推送 →</div>
+      </div>
+    </div>
     <div class="card">
-      <h3>上传财务资料（演示：粘贴数电票JSON）</h3>
-      <textarea id="payload">{
+      <h3>处理一张票据，只需 3 步</h3>
+      <div class="steps-3">
+        <div class="s3" onclick="jumpStep('ingest',1)"><div class="num">1</div><div class="t">传票据</div><div class="d">拍照 / 上传 / 粘贴信息</div></div>
+        <div class="s3" onclick="jumpStep('ingest',2)"><div class="num">2</div><div class="t">智能识别</div><div class="d">系统自动看清、查重、出建议</div></div>
+        <div class="s3" onclick="jumpStep('ingest',3)"><div class="num">3</div><div class="t">确认入账</div><div class="d">你点一下确认，票据进台账<span class="q" data-term="台账">？</span></div></div>
+      </div>
+      <div class="note">不会操作？点「先看个例子」让系统带你跑一遍，30 秒就懂。</div>
+      <button class="ghost" style="margin-top:10px" onclick="runTutorial(true)">先看个例子（一键演示）</button>
+    </div>
+    <div class="card">
+      <h3>最近处理的票据</h3>
+      <div class="recent-list" id="recentList"><div class="note">正在加载…</div></div>
+      <div class="note" style="margin-top:8px">色块说明：<span class="dot green" style="display:inline-block;margin:0 4px -2px 0"></span>已确认　<span class="dot yellow" style="display:inline-block;margin:0 4px -2px 0"></span>待确认　<span class="dot red" style="display:inline-block;margin:0 4px -2px 0"></span>需人工处理</div>
+    </div>
+  </div>
+
+  <!-- ② 票据处理（三步向导） -->
+  <div id="ingest" class="panel">
+    <div class="wizard-head">
+      <div class="ws active" id="ws1">第 1 步：传票据</div>
+      <div class="ws" id="ws2">第 2 步：智能识别</div>
+      <div class="ws" id="ws3">第 3 步：确认入账</div>
+    </div>
+
+    <div id="wiz1">
+      <div class="card">
+        <h3>第 1 步：把你的票据交给系统</h3>
+        <div class="dropzone" id="dropzone">
+          <div class="dz-big">点这里选票据图片，或直接把图片拖进来</div>
+          <div class="note" style="margin-top:8px">支持拖拽上传<span class="q" data-term="拖拽上传">？</span>：直接把图片拖进来，也支持拍照的票据、PDF 截图等图片（PNG/JPG）</div>
+          <input type="file" id="ingestFile" accept="image/png,image/jpeg,.json,.txt" style="display:none">
+        </div>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <button class="ghost" onclick="toggleJsonPanel()">粘贴数电票信息（高手/电脑上的文本方式）</button>
+          <span class="note">不知道在哪复制？<a href="javascript:void(0)" onclick="jump('guide')">看使用说明 →</a></span>
+        </div>
+        <div id="jsonPanel" class="hidden" style="margin-top:12px">
+          <div class="note" style="margin-bottom:6px">粘贴后系统会实时检查格式；格式不对会标红并提示在哪一行。</div>
+          <textarea id="payload" oninput="jsonLiveCheck()">{
   "doc_type": "invoice_eticket",
   "file_name": "Demo_ETicket_001.json",
   "invoice": {
@@ -73,63 +275,105 @@
     "category": "办公用品"
   }
 }</textarea>
-      <button class="primary" onclick="submitDoc()">提交处理（安检 → 抽取 → 查重 → 校验 → 建议 → 归档）</button>
-      <div class="l2">提示：本平台止步于「处理建议 + 归档」。记账、付款、申报等L2动作由财务人员登录银行/税务系统人工执行，平台不代填任何登录凭证。</div>
+          <div id="jsonError" class="hidden err-box"></div>
+          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap">
+            <button class="primary" onclick="submitDocJson()">开始智能识别</button>
+            <button class="ghost" onclick="loadDemoPayload()">载入示例修正</button>
+          </div>
+        </div>
+        <div class="l2" style="margin-top:14px">提示：系统只负责「看清票据 + 给建议 + 归档」。付款、申报、缴税、开票等操作，由你自己登录银行/税务系统完成。</div>
+      </div>
     </div>
-    <div class="card result" id="resultCard" style="display:none">
-      <h3>处理结果</h3>
-      <div id="resultBody"></div>
+
+    <div id="wiz2" class="hidden">
+      <div class="card">
+        <h3>第 2 步：系统正在智能识别</h3>
+        <div class="progress-steps" id="progSteps">
+          <div class="ps" data-p="0">安全检查</div>
+          <div class="ps" data-p="1">信息识别</div>
+          <div class="ps" data-p="2">查重</div>
+          <div class="ps" data-p="3">出建议</div>
+        </div>
+        <div id="ingestResult"></div>
+        <div id="ingestStepsDetail" class="hidden" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div id="wiz3" class="hidden">
+      <div class="card">
+        <h3>第 3 步：确认入账 <span class="q" data-term="人工确认">？</span></h3>
+        <div class="confirm-box">
+          <div style="font-size:16px; margin-bottom:14px" id="confirmSummary">—</div>
+          <button class="green big" id="confirmBtn" onclick="doConfirm()">确认入账</button>
+          <div class="note" style="margin-top:10px">确认只表示「你已核对」，票据记入台账并留下操作留痕；不会替你付款、报税。</div>
+        </div>
+        <div id="confirmDone" class="hidden">
+          <div class="result-card green" style="text-align:center">
+            <div style="font-size:22px; font-weight:bold">已归档 ✅</div>
+            <div id="confirmDoneText" style="margin-top:8px">—</div>
+            <div class="note" style="margin-top:10px">操作留痕已记录（谁、什么时候、做了什么，可查）。别忘了：付款、申报、缴税、开票请按流程人工操作。</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- ③ OCR 票据 -->
   <div id="ocr" class="panel">
     <div class="card">
-      <h3>OCR图片票据（本地闭环：图片不出内网，置信度不足绝不硬定级）</h3>
-      <button class="primary" onclick="loadDemoOcr('clear')">载入清晰演示票</button>
-      <button class="primary" onclick="loadDemoOcr('blur')">载入模糊演示票（触发待核验）</button>
-      <input type="file" id="ocrFile" accept="image/png,image/jpeg" style="margin:10px 0 0 12px">
-      <button class="primary" onclick="uploadRealOcr()">上传真实图片</button>
-      <div class="note" style="margin-top:10px">演示通道使用合成图片+确定性OCR输出；真实图片在本地OCR引擎（PaddleOCR适配位）接入前将得到「引擎未接入」的诚实回答，不编造字段。</div>
+      <h3>OCR 票据 <span class="q" data-term="人工核验">？</span>（本地识别，图片不出内网）</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+        <button class="primary" onclick="loadDemoOcr('clear')">载入清晰演示票</button>
+        <button class="ghost" onclick="loadDemoOcr('blur')">载入模糊演示票（看看"机器没认准"长啥样）</button>
+        <input type="file" id="ocrFile" accept="image/png,image/jpeg" style="margin:10px 0 0 12px">
+        <button class="ghost" style="margin-top:10px" onclick="uploadRealOcr()">上传真实图片</button>
+      </div>
+      <div class="note" style="margin-top:10px">真实图片在本地 OCR识别<span class="q" data-term="OCR识别">？</span>引擎接入前会得到「暂时识别不了」的诚实回答，系统不会瞎编字段。当前为<span class="q" data-term="测试模式">？</span>演示数据流。</div>
     </div>
-    <div class="card result" id="ocrResultCard" style="display:none">
-      <h3>OCR处理结果</h3>
+    <div class="card result hidden" id="ocrResultCard">
+      <h3>识别结果</h3>
       <div id="ocrResultBody"></div>
     </div>
-    <div class="card" id="verifyCard" style="display:none">
-      <h3>人工核验回填（待核验文档：<span id="verifyDocId"></span>）</h3>
-      <div class="note" style="margin-bottom:10px">财务人员对照原件核对/修正以下字段后提交，字段自此以人工值为准，再走规则校验定级。</div>
+    <div class="card hidden" id="verifyCard">
+      <h3>机器没认准，请你核对一下 <span class="q" data-term="人工核验">？</span>（文档 #<span id="verifyDocId"></span>）</h3>
+      <div class="note" style="margin-bottom:10px">请对照原件核对/修正下面的信息，提交后以你填的为准，再走规则校验定级。</div>
       <textarea id="verifyFields" style="height:220px"></textarea>
-      <button class="primary" onclick="submitVerify()">提交核验（人工值为准）</button>
+      <button class="primary" style="margin-top:10px" onclick="submitVerify()">提交核对（以人工填写为准）</button>
     </div>
   </div>
 
+  <!-- ④ 征期日历（V1.1 P2 色块倒计时） -->
   <div id="calendar" class="panel">
     <div class="card">
-      <h3>征期日历与待办（种子数据）</h3>
-      <table id="calTable">
-        <thead><tr><th>周期</th><th>任务</th><th>截止规则</th><th>下次截止</th><th>提醒日</th><th>智能体动作（L0/L1）</th><th>人工动作（L2）</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="note">提前提醒由日历驱动；征期顺延以税务机关公告为准，知识库须同步更新。</div>
+      <h3>征期日历与待办 <span class="q" data-term="申报期">？</span></h3>
+      <div class="note" style="margin-bottom:10px">色块说明：<span class="dot green" style="display:inline-block;margin:0 4px -2px 0"></span>还早（&gt;10 天）　<span class="dot yellow" style="display:inline-block;margin:0 4px -2px 0"></span>临近（3-10 天）　<span class="dot red" style="display:inline-block;margin:0 4px -2px 0"></span>马上截止（&lt;3 天）</div>
+      <div id="calList" class="cal-list"><div class="note">正在加载…</div></div>
+      <div class="note">提前提醒由日历驱动；征期顺延以税务机关公告为准。</div>
     </div>
   </div>
 
+  <!-- ⑤ 待办推送（V1.1 P2 模式标注+三色反馈） -->
   <div id="notify" class="panel">
     <div class="card">
-      <h3>企业微信待办卡片推送（L1提醒通道）</h3>
-      <div class="note" style="margin-bottom:10px">卡片字段白名单：标题/截止日/剩余天数/金额区间/链接/L2提示——不含账号、税号、验证码。webhook未配置时为dry-run模式，卡片仅落本地。</div>
-      <button class="primary" onclick="pushCards()">扫描提醒窗口并推送到期待办</button>
+      <h3>企业微信待办卡片推送 <span class="q" data-term="测试模式">？</span></h3>
+      <div class="push-mode-bar" id="pushModeBar">
+        <span class="mode-tag" id="pushModeTag">模式读取中</span>
+        <span id="pushModeText">正在确认当前推送模式…</span>
+        <button class="push-switch" id="pushModeSwitch" onclick="togglePushMode()">切换模式</button>
+      </div>
+      <div class="note" style="margin-bottom:10px">卡片只含：标题/截止日/剩余天数/金额区间/链接/提示——绝不含账号、税号、验证码。</div>
+      <button class="primary" onclick="pushCards()">扫描提醒窗口并推送待办</button>
       <div id="pushResult" style="margin-top:12px"></div>
     </div>
     <div class="card">
       <h3>当前提醒窗口内待推送任务</h3>
       <table id="pendTable">
-        <thead><tr><th>任务</th><th>周期</th><th>截止日</th><th>提醒日</th><th>智能体动作（L0/L1）</th></tr></thead>
+        <thead><tr><th>任务</th><th>周期</th><th>截止日</th><th>提醒日</th><th>系统做的（整理/提醒）</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
     <div class="card">
-      <h3>已推送卡片记录（审计可查）</h3>
+      <h3>已推送卡片记录（操作留痕可查）</h3>
       <table id="pushTable">
         <thead><tr><th>ID</th><th>任务</th><th>截止日</th><th>模式</th><th>状态</th><th>推送时间</th></tr></thead>
         <tbody></tbody>
@@ -137,176 +381,742 @@
     </div>
   </div>
 
+  <!-- ⑥ 合规问答 -->
   <div id="kb" class="panel">
     <div class="card">
-      <h3>合规问答（仅从已审核知识库作答，无来源即拒答）</h3>
+      <h3>合规问答 <span class="q" data-term="数电票">？</span>（只从已审核资料里答，查不到就说不清楚）</h3>
+      <div style="margin-top:6px"><b>常见问题（点一下就能问）：</b></div>
+      <div class="qa-chips" id="qaChips"></div>
       <input class="kb-q" id="kbq" placeholder="例如：数电票需要打印贴凭证吗？" onkeydown="if(event.key==='Enter')askKb()">
-      <button class="primary" onclick="askKb()">提问</button>
+      <button class="primary" style="margin-left:10px" onclick="askKb()">提问</button>
       <div id="kbAnswer" style="margin-top:14px"></div>
     </div>
   </div>
 
+  <!-- ⑦ 已归档票据 -->
   <div id="docs" class="panel">
     <div class="card">
-      <h3>已归档票据</h3>
+      <h3>已归档票据 <span class="q" data-term="归档">？</span></h3>
       <table id="docTable">
         <thead><tr><th>ID</th><th>票号</th><th>建议等级</th><th>状态</th><th>归档时间</th><th>操作</th></tr></thead>
         <tbody></tbody>
       </table>
-      <div class="note">确认操作仅记录审计事件，表示「人工已核对」；不触发任何对外提交。</div>
+      <div class="note">「人工确认<span class="q" data-term="人工确认">？</span>」只表示你已核对并记下操作留痕，不触发任何付款/报税等对外操作。</div>
     </div>
   </div>
+
+  <!-- ⑧ 使用说明 -->
+  <div id="guide" class="panel">
+    <div class="card">
+      <h3>三步操作指引：传票 → 识别 → 确认</h3>
+      <div class="guide-step"><div class="icon">📷</div><div><b>第 1 步：传票据</b><br>在「票据处理」里拍照上传票据图片，或点击「粘贴数电票信息」把电子发票内容粘进来。不想自己找？点「先看个例子」让系统演示一张。</div></div>
+      <div class="guide-step"><div class="icon">🤖</div><div><b>第 2 步：智能识别</b><br>系统自动做 4 件事：安全检查 → 信息识别 → 查重（有没有重复录入）→ 出建议<span class="q" data-term="建议等级">？</span>。识别完给你三色结果：<span class="grade-A">绿=可直接确认</span>、<span class="grade-B">黄=需核对</span>、<span class="grade-C">红=需人工处理</span>。</div></div>
+      <div class="guide-step"><div class="icon">✅</div><div><b>第 3 步：确认入账</b><br>你点绿色「确认入账」大按钮，票据就进台账留底。系统只做整理、建议、提醒，付款/申报/缴税/开票必须你自己（或会计）操作。</div></div>
+    </div>
+    <div class="card">
+      <h3>术语白话对照表</h3>
+      <table><thead><tr><th>术语</th><th>白话解释</th></tr></thead><tbody id="glossaryTable"></tbody></table>
+    </div>
+    <div class="card">
+      <h3>常见问题（FAQ）</h3>
+      <div class="faq-item"><details><summary>1. 数电票<span class="q" data-term="数电票">？</span>需要打印吗？</summary><p>电子发票不用纸质版也能正常入账。是否还需要打印一份留存，按你当地税务局的要求来，拿不准就问你的会计。</p></details></div>
+      <div class="faq-item"><details><summary>2. 我怎么把票据弄进系统？</summary><p>两种方式：① 拍照/上传票据图片；② 点「粘贴数电票信息」把电子发票内容粘进来。完全不会？点「先看个例子」，系统会带你跑一遍。</p></details></div>
+      <div class="faq-item"><details><summary>3. 系统能帮我付款、报税吗？</summary><p>不能，这是红线。系统只负责整理票据、给建议、做提醒；付款、申报（到电子税务局<span class="q" data-term="电子税务局">？</span>办理）、缴税、开票必须由你或你的会计亲自操作。</p></details></div>
+      <div class="faq-item"><details><summary>4. 为什么有的票据要「人工核对」？</summary><p>机器没认准（置信度低）的字段，系统宁可请你核对也不瞎填，避免录错。你对照原件修正一下就放心了。</p></details></div>
+      <div class="faq-item"><details><summary>5. 推送会不会真的发到微信？</summary><p>当前 webhook 未配置，是测试模式，不会真的发到微信，只是本地看看效果。正式启用后界面会明确标注「正式模式」。</p></details></div>
+      <div class="faq-item"><details><summary>6. 什么是操作留痕<span class="q" data-term="操作留痕">？</span>？</summary><p>系统记录"谁、在什么时候、做了什么操作"，随时可查。不是盯着你，是为了出问题时能说清楚，也更安全。</p></details></div>
+    </div>
+    <div class="card">
+      <h3>合规红线（请一定记住）</h3>
+      <div class="red-line" style="margin-bottom:0">🔒 系统只整理票据、给建议、做提醒。<b>付款、申报、缴税、开票必须人工操作</b>。系统绝不代填任何登录凭证（密码、验证码、U盾等），也不自动对外提交。</div>
+    </div>
+  </div>
+
 </main>
+
+<!-- 新手引导浮层 -->
+<div class="onboard-mask" id="onboardMask">
+  <div class="onboard-card">
+    <button class="onboard-skip" onclick="skipOnboarding()">跳过，直接使用</button>
+    <div class="onboard-body" id="onboardBody"></div>
+    <div class="onboard-dots" id="onboardDots"></div>
+    <div class="onboard-actions">
+      <button class="ghost hidden" id="obPrev" onclick="obStep(-1)">上一步</button>
+      <div></div>
+      <button class="primary" id="obNext" onclick="obStep(1)">下一步</button>
+    </div>
+  </div>
+</div>
+
+<div class="tip-bubble" id="tipBubble"></div>
+
 <script>
-async function submitDoc() {
-  const payload = JSON.parse(document.getElementById('payload').value);
+let glossMap = {};
+let curDoc = null;      // 当前待确认文档
+let onboardStep = 1;    // 当前引导步骤 1..3
+let lastOcrMode = 'demo'; // demo | real
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtMoney(v){ if(v==null||v==='') return '—'; return '¥ ' + Number(v).toLocaleString('zh-CN',{minimumFractionDigits:2}); }
+
+/* ---------- 术语？词典 ---------- */
+const FALLBACK_GLOSSARY = [
+  ["数电票","电子发票，税务局发的数字发票，不用纸质版也能正常入账。"],
+  ["查重","检查这张票是不是已经录入过，防止同一张票重复入账。"],
+  ["建议等级","系统给出的处理意见：A=可以直接确认；B=核对后确认；C=转人工。"],
+  ["置信度","机器识别有多准：90%以上算很准；低于90%建议人工再核对一眼。"],
+  ["小规模纳税人","规模小、税率低的企业类型，一般按季度申报。"],
+  ["归档","把票据存进台账留底，之后随时可查。"],
+  ["测试模式","演示用的推送模式，不会真的发到微信，只是让你看效果。"],
+  ["人工核验","机器没认准的时候，需要你对照原件核对、修正信息。"],
+  ["转人工","这笔业务超出系统能处理的范围，需要交给财务或税务专业人员处理。"],
+  ["申报期","向税务局报税的期限，到期前要完成申报，逾期会有影响。"],
+  ["操作留痕","系统记录谁在什么时候做了什么操作，随时可查，安全放心。"],
+  ["价税合计","一张票的\"价钱\"= 商品金额 + 税钱，合起来叫价税合计。"],
+  ["含税/不含税","含税=价格里已经算进税钱；不含税=只算商品本身的价钱。看金额前先分清这个。"],
+  ["台账","系统里的票据记账本，归档后的票都存在这里，随时可查。"],
+  ["电子税务局","税务局官方的网上办税平台，报税、缴税都在那里办，本系统不会替你登录。"],
+  ["申报表","给税务局交的报表，说明你这段时间该交多少税。"],
+  ["税种","税的种类，比如增值税、所得税、印花税，不同税种交法不同。"],
+  ["OCR识别","机器把图片上的字\"读\"出来变成文字，就是认票据图片的技术。"],
+  ["拖拽上传","直接把文件图标用鼠标拖到框里就能上传，不用点开文件夹找。"],
+  ["查重拦截","系统发现这张票以前录过了，自动拦下，免得你重复入账。"],
+  ["人工确认","由你亲自点一下\"确认\"，表示你核对过这张票，确认后记入台账留痕。"]
+];
+function applyGlossary(items){
+  (items||[]).forEach(it => { glossMap[it.term] = it.plain; });
+  const tb = $('glossaryTable');
+  if(tb) tb.innerHTML = items.map(it => '<tr><td>'+esc(it.term)+'</td><td>'+esc(it.plain)+'</td></tr>').join('');
+}
+async function initGlossary(){
+  try{
+    const d = await (await fetch('/api/v1/glossary')).json();
+    applyGlossary(d.items||[]);
+  }catch(e){
+    // 词典接口挂掉时的兜底内联表
+    applyGlossary(FALLBACK_GLOSSARY.map(x => ({term: x[0], plain: x[1]})));
+  }
+}
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(t.classList && t.classList.contains('q')){
+    const term = t.getAttribute('data-term');
+    const b = $('tipBubble');
+    b.innerHTML = '<b>'+esc(term)+'</b><div>'+esc(glossMap[term] || '解释稍后加载，稍等一下')+'</div>';
+    b.style.display = 'block';
+    const r = t.getBoundingClientRect();
+    b.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 280)) + 'px';
+    b.style.top = (r.bottom + 8) + 'px';
+    e.stopPropagation();
+  } else {
+    const b = $('tipBubble'); if(b) b.style.display = 'none';
+  }
+});
+
+/* ---------- tab 切换 ---------- */
+function jump(tab){
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  const b = document.querySelector('nav button[data-tab="'+tab+'"]');
+  if(b) b.classList.add('active');
+  $(tab).classList.add('active');
+  if(tab==='dash') loadDashboard();
+  if(tab==='docs') loadDocs();
+  if(tab==='calendar') loadCal();
+  if(tab==='notify'){ loadPending(); loadPushed(); }
+  history.replaceState(null, '', '#' + tab);
+}
+function jumpStep(tab, step){ jump(tab); wizardGo(step); }
+function jumpAndPush(tab){ jump(tab); setTimeout(pushCards, 150); }
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => jump(b.dataset.tab));
+
+/* ---------- 工作台 ---------- */
+async function loadDashboard(){
+  let d;
+  try { d = await (await fetch('/api/v1/dashboard')).json(); } catch(e){ return; }
+  const co = d.company || {};
+  $('coName').textContent = co.name || '—';
+  let typeText = co.taxpayer_type === 'small_scale' ? '小规模纳税人' + '<span class="q" data-term="小规模纳税人">？</span>（税率低、按季度申报）' : esc(co.taxpayer_type||'');
+  $('coType').innerHTML = typeText;
+  const cd = d.countdown;
+  if(cd){
+    const n = cd.days_left;
+    const badge = $('taxBadge');
+    badge.textContent = '本季「'+cd.task_name+'」申报期还剩 '+n+' 天';
+    badge.className = 'tax-badge ' + (n <= 3 ? 'danger' : (n <= 10 ? 'warn' : 'ok'));
+    $('countdownNum').textContent = n + ' 天';
+    $('countdownLabel').textContent = '「'+cd.task_name+'」截止 ' + cd.deadline;
+  } else {
+    $('taxBadge').textContent = '暂无进行中的申报期';
+    $('taxBadge').className = 'tax-badge ok';
+    $('countdownNum').textContent = '—';
+    $('countdownLabel').textContent = '暂无进行中的税期任务';
+  }
+  $('confirmNum').textContent = d.pending_count + ' 张';
+  $('pushNum').textContent = d.pending_push_count + ' 条';
+  const rl = $('recentList');
+  if(!d.recent || !d.recent.length){ rl.innerHTML = '<div class="note">还没有处理过票据。点上面「先看个例子」体验一下。</div>'; return; }
+  rl.innerHTML = d.recent.map(r => {
+    let cls, txt;
+    if(r.status === 'confirmed'){ cls='green'; txt='已确认'; }
+    else if(r.status === 'pending' || r.status === 'pending_verification'){ cls='yellow'; txt='待确认'; }
+    else { cls='red'; txt='需人工处理'; }
+    return '<div class="recent-row"><span class="dot '+cls+'"></span><span>#'+r.id+' '+esc(r.invoice_no||'无票号')+' <span class="note">'+esc(r.date||'')+'</span></span><span class="amt '+cls+'">'+fmtMoney(r.amount)+'</span><span>'+txt+'</span></div>';
+  }).join('');
+}
+
+/* ---------- 票据处理 三步向导 ---------- */
+function wizardGo(step){
+  $('wiz1').classList.toggle('hidden', step !== 1);
+  $('wiz2').classList.toggle('hidden', step !== 2);
+  $('wiz3').classList.toggle('hidden', step !== 3);
+  $('ws1').classList.toggle('active', step === 1);
+  $('ws2').classList.toggle('active', step === 2);
+  $('ws3').classList.toggle('active', step === 3);
+  if(step === 3){ renderConfirmStep(); }
+}
+function toggleJsonPanel(){ $('jsonPanel').classList.toggle('hidden'); }
+
+/* 上传/拖拽 */
+const dz = $('dropzone');
+dz.addEventListener('click', () => $('ingestFile').click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('hover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('hover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('hover');
+  if(e.dataTransfer.files.length) handleIngestFile(e.dataTransfer.files[0]);
+});
+$('ingestFile').addEventListener('change', e => { if(e.target.files.length) handleIngestFile(e.target.files[0]); });
+
+function handleIngestFile(f){
+  if(!f) return;
+  if(f.type === 'application/json' || f.name.toLowerCase().endsWith('.json') || f.name.toLowerCase().endsWith('.txt')){
+    const rd = new FileReader();
+    rd.onload = () => { $('payload').value = rd.result; toggleJsonPanel(); };
+    rd.readAsText(f);
+    return;
+  }
+  const rd = new FileReader();
+  rd.onload = async () => {
+    const res = await fetch('/api/v1/documents/image', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({file_name: f.name, image_base64: rd.result.split(',')[1], ocr_output: null})});
+    const data = await res.json();
+    showIngestResult(data);
+  };
+  rd.readAsDataURL(f);
+}
+
+const DEMO_PAYLOAD = {
+  "doc_type": "invoice_eticket",
+  "file_name": "Demo_ETicket_001.json",
+  "invoice": {
+    "invoice_no": "24312000000012345678",
+    "issue_date": "2026-09-18",
+    "seller_name": "Demo_Supplier_01",
+    "buyer_name": "瀚钦科技有限公司",
+    "buyer_tax_no": "91310000DEMO000000X",
+    "amount": 1000.00,
+    "tax": 10.00,
+    "total": 1010.00,
+    "category": "办公用品"
+  }
+};
+function jsonErrorDetail(text, e){
+  // 尽量从 JS 报错里挖出出错位置，定位到行和列
+  let pos = -1;
+  const raw = e && e.message ? String(e.message) : '';
+  const m = raw.match(/position\s*(\d+)/i) || raw.match(/at\s+position\s+(\d+)/i) || raw.match(/(\d+)\s*$/);
+  if(m) pos = parseInt(m[1], 10);
+  if(pos < 0 || pos > text.length){
+    const openC = (text.match(/{/g) || []).length, closeC = (text.match(/}/g) || []).length;
+    const openB = (text.match(/\[/g) || []).length, closeB = (text.match(/\]/g) || []).length;
+    const qt = (text.match(/"/g) || []).length;
+    if(openC !== closeC) return {line:0, col:0, reason:'大括号 {} 不配对：' + (openC > closeC ? '多了一个「{」，缺一个「}」' : '多了一个「}」，缺一个「{」') + '。'};
+    if(openB !== closeB) return {line:0, col:0, reason:'方括号 [] 不配对：' + (openB > closeB ? '多了一个「[」，缺一个「]」' : '多了一个「]」，缺一个「[」') + '。'};
+    if(qt % 2) return {line:0, col:0, reason:'引号没成对：有字段忘了加结束引号，或忘了加「"」。'};
+    return {line:0, col:0, reason:'格式看起来不太对，建议直接点「载入示例修正」，再照着示例改你的内容。'};
+  }
+  const before = text.slice(0, pos);
+  const line = before.split('\n').length;
+  const col = pos - before.lastIndexOf('\n');
+  let reason = raw.replace(/^JSON\.parse: /, '').replace(/^Unexpected token /, '这里附近有个符号写错了：');
+  if(!reason || reason === raw) reason = '这里附近缺引号或括号，请检查一下。';
+  return {line:line, col:Math.max(1, col), reason:reason};
+}
+function jsonLiveCheck(){
+  const ta = $('payload'), box = $('jsonError');
+  if(!ta) return true;
+  try { JSON.parse(ta.value); }
+  catch(e){
+    const d = jsonErrorDetail(ta.value, e);
+    ta.classList.add('err-input'); ta.classList.remove('ok-input');
+    box.classList.remove('hidden');
+    box.innerHTML = '格式有点问题：' + (d.line ? '第 ' + d.line + ' 行附近（第 ' + d.col + ' 列）——' : '') + esc(d.reason) + ' 可以点「载入示例修正」快速恢复，或对照示例手动改。';
+    return false;
+  }
+  ta.classList.remove('err-input'); ta.classList.add('ok-input');
+  box.classList.add('hidden');
+  return true;
+}
+function loadDemoPayload(){
+  $('payload').value = JSON.stringify(DEMO_PAYLOAD, null, 2);
+  jsonLiveCheck();
+}
+async function submitDocJson(){
+  if(!jsonLiveCheck()) return; // 实时校验已在输入时提示，这里再兜底拦一次
+  const payload = JSON.parse($('payload').value);
   const res = await fetch('/api/v1/documents', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
   const data = await res.json();
-  const card = document.getElementById('resultCard');
-  const body = document.getElementById('resultBody');
-  card.style.display = 'block';
-  let html = '';
-  (data.steps || []).forEach(s => {
-    html += `<div class="step-row"><span class="badge ${s[1]?'ok':'fail'}">${s[1]?'通过':'拦截'}</span><b>${s[0]}</b><span>${s[2]||''}</span></div>`;
-  });
-  if (data.advice) {
-    html += `<div class="advice"><span class="grade-${data.advice.grade}">建议等级 ${data.advice.grade}</span>　${data.advice.summary}<div class="src">依据：${(data.advice.sources||[]).join('；')}</div></div>`;
+  showIngestResult(data);
+}
+
+async function runTutorial(fromDash){
+  if(fromDash) jump('ingest');
+  wizardGo(2);
+  animateProgress();
+  try {
+    const res = await fetch('/api/v1/documents/tutorial', {method:'POST'});
+    const data = await res.json();
+    setTimeout(() => showIngestResult(data), 1800);
+  } catch(e){
+    setTimeout(() => showIngestResult({status:'rejected', steps:[], message:'演示失败，请稍后重试'}), 1800);
   }
-  if (data.doc_id) html += `<div class="note">已归档：文档#${data.doc_id}，内容哈希 ${data.content_hash.slice(0,16)}…（原件防篡改留痕）</div>`;
-  body.innerHTML = html;
-  loadDocs();
 }
-async function loadCal() {
-  const rows = await (await fetch('/api/v1/calendar')).json();
-  document.querySelector('#calTable tbody').innerHTML = rows.map(r =>
-    `<tr><td>${r.cycle}</td><td>${r.name}</td><td>${r.deadline_rule}</td><td>${r.next_deadline}</td><td>${r.remind_on}</td><td>${r.agent_action}</td><td>${r.human_action}</td></tr>`).join('');
-}
-async function askKb() {
-  const q = document.getElementById('kbq').value;
-  if (!q) return;
-  const data = await (await fetch('/api/v1/kb/ask?q=' + encodeURIComponent(q))).json();
-  const conf = data.confidence === 'A' ? 'grade-A' : 'grade-C';
-  let html = `<div class="advice"><span class="${conf}">置信度 ${data.confidence}</span>　${data.answer}`;
-  if (data.basis) html += `<div class="src">依据：${data.basis}</div>`;
-  if (data.condition) html += `<div class="src">适用条件：${data.condition}</div>`;
-  if (data.source) html += `<div class="src">来源：${data.source}（${data.date}，${data.version}，审核：${data.reviewed_by}）</div>`;
-  if (data.score !== undefined) html += `<div class="src">检索匹配分 ${data.score} ｜ 回答模式：${data.mode}</div>`;
-  html += `</div>`;
-  document.getElementById('kbAnswer').innerHTML = html;
-}
-async function loadDocs() {
-  const rows = await (await fetch('/api/v1/documents')).json();
-  document.querySelector('#docTable tbody').innerHTML = rows.map(r =>
-    `<tr><td>${r.id}</td><td>${r.invoice_no}</td><td class="grade-${r.grade}">${r.grade}</td><td>${r.status}</td><td>${r.created_at}</td>` +
-    `<td>${r.status==='pending' ? `<button class="primary" style="padding:4px 12px;font-size:12px" onclick="confirmDoc(${r.id})">人工确认</button>` : '—'}</td></tr>`).join('');
-}
-async function confirmDoc(id) {
-  await fetch(`/api/v1/documents/${id}/confirm`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({actor:'财务人员'})});
-  loadDocs();
-}
-function confBadge(f) {
-  const c = f.confidence;
-  const cls = c >= 0.9 ? 'ok' : 'fail';
-  const label = c >= 0.9 ? '可信' : '低置信';
-  return `<span class="badge ${cls}">${label} ${c.toFixed(2)}</span>`;
-}
-function renderOcrResult(data) {
-  const card = document.getElementById('ocrResultCard');
-  const body = document.getElementById('ocrResultBody');
-  card.style.display = 'block';
-  let html = '';
-  (data.steps || []).forEach(s => {
-    html += `<div class="step-row"><span class="badge ${s[1]?'ok':'fail'}">${s[1]?'通过':'拦截'}</span><b>${s[0]}</b><span>${s[2]||''}</span></div>`;
+
+function animateProgress(){
+  const ps = document.querySelectorAll('#progSteps .ps');
+  ps.forEach((p, i) => { p.className = 'ps'; });
+  [0,1,2,3].forEach(i => {
+    setTimeout(() => {
+      ps.forEach((p, j) => { if(j < i) p.className='ps done'; if(j === i) p.className='ps on'; });
+    }, 350 * (i+1));
   });
-  const fw = data.fields_with_conf || data.fields;
-  if (fw && fw.invoice_no && fw.invoice_no.confidence !== undefined) {
-    html += '<div style="margin-top:10px"><b style="font-size:13px">OCR字段与置信度：</b></div>';
-    for (const [k, v] of Object.entries(fw)) {
-      html += `<div class="step-row">${confBadge(v)}<b>${k}</b><span>${v.value ?? ''}</span></div>`;
+}
+
+function showIngestResult(data){
+  wizardGo(2);
+  const box = $('ingestResult');
+  const detail = $('ingestStepsDetail');
+  // 详细步骤（操作留痕，折叠展示）
+  if(data.steps && data.steps.length){
+    detail.classList.remove('hidden');
+    detail.innerHTML = '<b style="font-size:13px">系统做了什么（展开看）：</b>' + data.steps.map(s =>
+      '<div class="step-row"><span class="badge ' + (s[1] ? 'ok' : 'fail') + '">' + (s[1] ? '通过' : '拦截') + '</span><b>' + esc(s[0]) + '</b><span>' + esc(s[2] || '') + '</span></div>').join('');
+  } else { detail.classList.add('hidden'); detail.innerHTML=''; }
+
+  const st = data.status;
+  if(st === 'ok'){
+    const grade = data.advice ? data.advice.grade : 'A';
+    if(grade === 'A'){
+      box.innerHTML = '<div class="result-card green"><h4>✅ 可以放心确认</h4>' +
+        '<div class="field">票号：' + esc((data.fields && data.fields.invoice_no) || (data.fields_with_conf && data.fields_with_conf.invoice_no && data.fields_with_conf.invoice_no.value) || '') + '</div>' +
+        '<div class="field">金额：' + fmtMoney((data.fields && (data.fields.total || data.fields.amount))) + '</div>' +
+        '<div class="field">日期：' + esc(data.fields && data.fields.issue_date) + '</div>' +
+        (data.advice ? '<div class="note">建议：' + esc(data.advice.summary) + '</div>' : '') +
+        '</div>';
+    } else if(grade === 'B'){
+      box.innerHTML = '<div class="result-card yellow"><h4>⚠️ 建议你先核对一下</h4><div class="field">这张票系统建议核对后再确认（等级 B）。</div>' +
+        (data.advice ? '<div class="note">建议：' + esc(data.advice.summary) + '</div>' : '') + '</div>';
+    } else {
+      box.innerHTML = '<div class="result-card red"><h4>🔴 这笔要人工处理</h4><div class="field">系统建议转人工（等级 C）。</div>' +
+        (data.advice ? '<div class="note">原因：' + esc(data.advice.summary) + '</div>' : '') +
+        '<div class="note">下一步：找财务/税务专业人员处理，系统不代做判断。</div></div>';
     }
+  } else if(st === 'pending_verification'){
+    const low = (data.low_confidence_fields || []).join('、');
+    box.innerHTML = '<div class="result-card yellow"><h4>⚠️ 机器没认准，请你核对一下</h4><div class="field">低置信字段：' + esc(low) + '——系统不瞎填，请对照原件核对。</div>' +
+      '<div class="note">下一步：到「OCR票据」页的核对框里修正，或点击下面按钮直接去核对。</div>' +
+      '<button class="primary" style="margin-top:12px" onclick="gotoVerify(' + (data.doc_id||0) + ')">去核对修正</button></div>';
+  } else if(st === 'blocked'){
+    box.innerHTML = '<div class="result-card red"><h4>🔴 这笔不用重复录</h4><div class="field">这张票之前已经录过了（查重拦截<span class="q" data-term="查重拦截">？</span>），避免重复入账。</div><div class="note">下一步：去「已归档票据」里找找看。</div></div>';
+  } else if(st === 'engine_not_configured'){
+    box.innerHTML = '<div class="result-card red"><h4>🔴 这张真实图片暂时识别不了</h4><div class="field">原因：本地的 OCR识别<span class="q" data-term="OCR识别">？</span>引擎还没接入，系统不会瞎编字段，所以先不给出结果。</div>' +
+      '<div class="retry-note"><b>拍照时注意这 3 点，识别成功率更高：</b><ol><li>正对票据，别斜着拍</li><li>光线均匀，别在灯下反光</li><li>四角完整、字迹清楚</li></ol>' +
+      '<button class="primary" style="margin-top:10px" onclick="retryOcr()">重新选图再试一次</button></div></div>';
+  } else if(st === 'rejected'){
+    const msg = data.steps && data.steps[0] ? data.steps[0][2] : (data.message || '票据信息有问题');
+    box.innerHTML = '<div class="result-card red"><h4>🔴 这张票据没法收</h4><div class="field">原因：' + esc(msg) + '</div>' +
+      '<div class="retry-note"><b>多半是图片没拍好，试试这 3 点：</b><ol><li>正对票据，别斜着拍</li><li>光线均匀，别在灯下反光</li><li>四角完整、字迹清楚</li></ol>' +
+      '<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap"><button class="primary" onclick="retryOcr()">重新选图再试一次</button>' +
+      '<button class="ghost" onclick="jump(\'ingest\')">改用「粘贴数电票信息」</button></div></div></div>';
+  } else {
+    box.innerHTML = '<div class="result-card red"><h4>🔴 处理未完成</h4><div class="field">' + esc(data.message || '未知原因') + '</div></div>';
   }
-  if (data.status === 'pending_verification') {
-    html += `<div class="advice"><span class="grade-C">待人工核验</span>　低置信度字段：${(data.low_confidence_fields||[]).join('、')}——系统不给不确定的字段定级，请对照原件核验回填。</div>`;
-  } else if (data.status === 'engine_not_configured') {
-    html += `<div class="advice"><span class="grade-C">引擎未接入</span>　本地OCR引擎接入前，真实图片不做任何识别假设。</div>`;
-  } else if (data.advice) {
-    html += `<div class="advice"><span class="grade-${data.advice.grade}">建议等级 ${data.advice.grade}</span>　${data.advice.summary}</div>`;
-  }
-  if (data.doc_id) html += `<div class="note">文档#${data.doc_id}，图片哈希 ${String(data.content_hash).slice(0,16)}…，原件已不可变归档</div>`;
-  body.innerHTML = html;
-  if (data.status === 'pending_verification') showVerifyForm(data.doc_id);
-  else document.getElementById('verifyCard').style.display = 'none';
+  // 可确认：进入第3步
+  const okable = (st === 'ok' && data.advice && data.advice.grade !== 'C');
+  curDoc = (st === 'ok' || st === 'pending_verification') ? (data.doc_id || null) : null;
+  if(okable){ wizardGo(3); }
   loadDocs();
 }
-async function loadDemoOcr(q) {
+
+function renderConfirmStep(){
+  $('confirmDone').classList.add('hidden');
+  const box = $('confirmSummary');
+  box.innerHTML = '确认这张票据入账？确认后它会在台账里留底。';
+  $('confirmBtn').classList.remove('hidden');
+}
+
+async function doConfirm(){
+  if(!curDoc){ alert('没有待确认的票据，请先传一张票据。'); return; }
+  const res = await fetch('/api/v1/documents/' + curDoc + '/confirm', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({actor:'财务人员'})});
+  const d = await res.json();
+  $('confirmBtn').classList.add('hidden');
+  $('confirmDone').classList.remove('hidden');
+  $('confirmDoneText').textContent = '已归档，编号 DOC-' + d.doc_id + '，已记入台账。' + '系统只记账与提醒，付款、申报请按流程人工操作。';
+  loadDocs(); loadDashboard();
+}
+
+/* ---------- OCR 页（保留原功能，白话化） ---------- */
+async function loadDemoOcr(q){
+  lastOcrMode = 'demo';
+  wizardGo(1);
   const demo = await (await fetch('/api/v1/ocr/demo?quality=' + q)).json();
   const res = await fetch('/api/v1/documents/image', {method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({file_name: demo.file_name, image_base64: demo.image_base64, ocr_output: demo.ocr_output})});
   renderOcrResult(await res.json());
 }
-async function uploadRealOcr() {
-  const f = document.getElementById('ocrFile').files[0];
-  if (!f) { alert('请先选择图片文件'); return; }
+async function uploadRealOcr(){
+  lastOcrMode = 'real';
+  const f = $('ocrFile').files[0];
+  if(!f){ alert('请先选择图片文件'); return; }
   const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result.split(',')[1]); fr.readAsDataURL(f); });
   const res = await fetch('/api/v1/documents/image', {method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({file_name: f.name, image_base64: b64, ocr_output: null})});
   renderOcrResult(await res.json());
 }
-async function showVerifyForm(docId) {
-  const doc = await (await fetch('/api/v1/documents/' + docId)).json();
-  const prefill = {};
-  const flds = JSON.parse(doc.fields || '{}');
-  if (flds.invoice_no && flds.invoice_no.confidence !== undefined) {
-    for (const [k, v] of Object.entries(flds)) prefill[k] = v.value;
-  } else {
-    Object.assign(prefill, flds);
-  }
-  document.getElementById('verifyDocId').textContent = '#' + docId;
-  document.getElementById('verifyFields').value = JSON.stringify(prefill, null, 2);
-  document.getElementById('verifyCard').style.display = 'block';
+async function retryOcr(){
+  if(lastOcrMode === 'real'){ $('ocrFile').click(); }
+  else { loadDemoOcr('clear'); }
 }
-async function submitVerify() {
-  const docId = document.getElementById('verifyDocId').textContent.replace('#', '');
-  const invoice = JSON.parse(document.getElementById('verifyFields').value);
-  const res = await fetch(`/api/v1/documents/${docId}/verify_ocr`, {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({actor: '财务人员', invoice})});
-  const data = await res.json();
-  let html = '';
-  if (data.advice) html = `<div class="advice"><span class="grade-${data.advice.grade}">核验后建议等级 ${data.advice.grade}</span>　${data.advice.summary}<div class="src">依据：${(data.advice.sources||[]).join('；')}</div></div>`;
-  document.getElementById('ocrResultBody').innerHTML = html;
-  document.getElementById('verifyCard').style.display = 'none';
+function confBadge(f){
+  const c = f.confidence;
+  return '<span class="badge ' + (c >= 0.9 ? 'ok' : 'fail') + '">' + (c >= 0.9 ? '可信' : '低置信') + ' ' + c.toFixed(2) + '</span>';
+}
+function renderOcrResult(data){
+  $('ocrResultCard').classList.remove('hidden');
+  const body = $('ocrResultBody');
+  let html = '<div class="note" style="margin-bottom:10px">看金额时留意含税/不含税<span class="q" data-term="含税/不含税">？</span>、价税合计<span class="q" data-term="价税合计">？</span>，别把两个数看混。</div>';
+  (data.steps || []).forEach(s => {
+    html += '<div class="step-row"><span class="badge ' + (s[1] ? 'ok' : 'fail') + '">' + (s[1] ? '通过' : '拦截') + '</span><b>' + esc(s[0]) + '</b><span>' + esc(s[2] || '') + '</span></div>';
+  });
+  const fw = data.fields_with_conf || data.fields;
+  if(fw && fw.invoice_no && fw.invoice_no.confidence !== undefined){
+    html += '<div style="margin-top:10px"><b style="font-size:13px">识别出的字段与可信度：</b></div>';
+    for(const k in fw){
+      const v = fw[k];
+      html += '<div class="step-row">' + confBadge(v) + '<b>' + esc(k) + '</b><span>' + esc(v.value != null ? v.value : '') + '</span></div>';
+    }
+  }
+  if(data.status === 'pending_verification'){
+    html += '<div class="result-card yellow" style="margin-top:10px"><h4>机器没认准，请你核对一下</h4><div>低置信字段：' + esc((data.low_confidence_fields||[]).join('、')) + '——请对照原件核验。</div></div>';
+  } else if(data.status === 'engine_not_configured' || data.status === 'rejected'){
+    html += '<div class="retry-note"><b>白话原因：</b>' + (data.status === 'engine_not_configured'
+      ? '本地识别引擎还没接入，系统不会瞎编字段，宁可不认也不乱认。'
+      : '这张图没认出来，常见原因是拍照光线、角度或反光问题。') +
+      '<b>重拍建议：</b><ol><li>正对票据拍，别斜着拍</li><li>光线均匀，别背光、别在阴影里</li><li>别隔着玻璃或塑封，避免反光</li></ol>' +
+      '<button class="ghost" style="margin-top:10px" onclick="retryOcr()">重试</button></div>';
+  } else if(data.advice){
+    const g = data.advice.grade;
+    const cls = g === 'A' ? 'green' : (g === 'B' ? 'yellow' : 'red');
+    const title = g === 'A' ? '可以放心确认' : (g === 'B' ? '建议核对后确认' : '需人工处理');
+    html += '<div class="result-card ' + cls + '" style="margin-top:10px"><h4>' + title + '</h4><div>' + esc(data.advice.summary) + '</div></div>';
+  }
+  if(data.doc_id) html += '<div class="note">文档#' + data.doc_id + '，图片已不可变归档</div>';
+  body.innerHTML = html;
+  if(data.status === 'pending_verification') showVerifyForm(data.doc_id);
+  else $('verifyCard').classList.add('hidden');
   loadDocs();
 }
-async function pushCards() {
-  const rows = await (await fetch('/api/v1/notifications/push', {method:'POST'})).json();
-  const html = rows.length
-    ? rows.map(r => `<div class="step-row"><span class="badge ok">卡片</span><b>${r.name}</b><span>截止 ${r.deadline}</span><span>${r.result}</span></div>`).join('')
-    : '<div class="note">当前无到期提醒任务（不在提醒窗口内或已全部推送）</div>';
-  document.getElementById('pushResult').innerHTML = html;
+async function gotoVerify(docId){
+  jump('ocr');
+  await showVerifyForm(docId);
+}
+async function showVerifyForm(docId){
+  if(!docId) return;
+  const doc = await (await fetch('/api/v1/documents/' + docId)).json();
+  const flds = JSON.parse(doc.fields || '{}');
+  const prefill = {};
+  if(flds.invoice_no && flds.invoice_no.confidence !== undefined){
+    for(const k in flds) prefill[k] = flds[k].value;
+  } else { Object.assign(prefill, flds); }
+  $('verifyDocId').textContent = '#' + docId;
+  $('verifyFields').value = JSON.stringify(prefill, null, 2);
+  $('verifyCard').classList.remove('hidden');
+  verifyLiveCheck();
+}
+function verifyLiveCheck(){
+  const ta = $('verifyFields'), box = $('verifyError');
+  if(!ta) return true;
+  let obj;
+  try { obj = JSON.parse(ta.value); } catch(e){
+    const d = jsonErrorDetail(ta.value, e);
+    ta.classList.add('err-input'); ta.classList.remove('ok-input');
+    box.classList.remove('hidden');
+    box.innerHTML = '格式有点问题：' + (d.line ? '第 ' + d.line + ' 行附近（第 ' + d.col + ' 列）——' : '') + esc(d.reason);
+    return false;
+  }
+  const inv = obj || {};
+  let msg = '';
+  if(!inv.invoice_no || String(inv.invoice_no).length < 8) msg = '票号（invoice_no）看起来太短，请对照原件核对。';
+  else if(!inv.issue_date || !/^\d{4}-\d{2}-\d{2}$/.test(String(inv.issue_date))) msg = '日期（issue_date）格式应为 2026-09-18 这样的年月日。';
+  else if(inv.total != null && isNaN(Number(inv.total))) msg = '合计金额（total）必须是数字，别带「元」「¥」这些字。';
+  else if(inv.amount != null && isNaN(Number(inv.amount))) msg = '金额（amount）必须是数字，别带「元」「¥」这些字。';
+  else if(inv.tax != null && isNaN(Number(inv.tax))) msg = '税额（tax）必须是数字，别带「元」「¥」这些字。';
+  else if(inv.buyer_tax_no && !/^[0-9A-Za-z]{15,20}$/.test(String(inv.buyer_tax_no))) msg = '税号（buyer_tax_no）一般是 15~20 位数字或字母，请核对。';
+  if(msg){
+    ta.classList.add('err-input'); ta.classList.remove('ok-input');
+    box.classList.remove('hidden');
+    box.innerHTML = esc(msg);
+    return false;
+  }
+  ta.classList.remove('err-input'); ta.classList.add('ok-input');
+  box.classList.add('hidden');
+  return true;
+}
+async function submitVerify(){
+  if(!verifyLiveCheck()) return;
+  const docId = $('verifyDocId').textContent.replace('#','');
+  let invoice;
+  try { invoice = JSON.parse($('verifyFields').value); } catch(e){ return; }
+  const res = await fetch('/api/v1/documents/' + docId + '/verify_ocr', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({actor:'财务人员', invoice})});
+  const data = await res.json();
+  let html = '';
+  if(data.advice){
+    const g = data.advice.grade;
+    const cls = g === 'A' ? 'green' : (g === 'B' ? 'yellow' : 'red');
+    const title = g === 'A' ? '可以放心确认' : (g === 'B' ? '建议核对后确认' : '需人工处理');
+    html = '<div class="result-card ' + cls + '"><h4>核对后：' + title + '</h4><div>' + esc(data.advice.summary) + '</div></div>';
+  }
+  $('ocrResultBody').innerHTML = html;
+  $('verifyCard').classList.add('hidden');
+  loadDocs();
+}
+
+/* ---------- 日历 / 推送 / 问答 / 归档（V1.1 P2 色块+三色+快捷问答） ---------- */
+function dayLeftOf(iso){
+  const d = new Date(iso + 'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((d - now) / 86400000);
+}
+function calCardClass(days){ return days < 3 ? 'danger' : (days <= 10 ? 'warn' : 'ok'); }
+function plainAction(r){
+  const m = /(\d{4})-(\d{2})-(\d{2})/.exec(r.next_deadline || '');
+  const dm = m ? (parseInt(m[2],10) + '月' + parseInt(m[3],10) + '号') : '截止日前';
+  const base = (r.human_action || '').indexOf('L2') >= 0
+    ? '到时由你（或会计）登录电子税务局/网银实际办理申报、付款'
+    : (r.agent_action || '按提醒及时处理');
+  return dm + '前记得确认票据、备好材料；' + base + '。';
+}
+async function loadCal(){
+  let rows = [];
+  try { rows = await (await fetch('/api/v1/calendar')).json(); }
+  catch(e){ $('calList').innerHTML = '<div class="note">日历加载失败，请刷新重试</div>'; return; }
+  if(!rows || !rows.length){ $('calList').innerHTML = '<div class="note">暂无征期任务</div>'; return; }
+  $('calList').innerHTML = rows.map(r => {
+    const days = dayLeftOf(r.next_deadline);
+    const cls = calCardClass(days);
+    const tag = cls === 'danger' ? '马上截止' : (cls === 'warn' ? '临近' : '还早');
+    return '<div class="cal-card ' + cls + '">' +
+      '<div class="cal-days"><span class="num">' + days + '</span><span class="unit">剩余天</span></div>' +
+      '<div class="cal-info">' +
+        '<div class="cal-title">' + esc(r.name) + '<span class="badge">' + esc(r.cycle) + '</span><span class="badge">' + tag + '</span></div>' +
+        '<div class="cal-meta">截止：' + esc(r.next_deadline) + '（' + esc(r.deadline_rule) + '）</div>' +
+        '<div class="cal-deadline">提醒日：' + esc(r.remind_on) + '</div>' +
+        '<div class="cal-action">' + esc(plainAction(r)) + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+/* 推送模式（V1.1 P2）：模式以最近一次推送结果为准，切换仅UI层+清晰提示 */
+let pushMode = '';
+let pushModeUser = '';
+function pushModeHint(mode){
+  return mode === 'real'
+    ? '正式模式：卡片会真实发送到企业微信群（请先确认 webhook 已配置）。'
+    : '测试模式：不会真的发微信，只在本机看效果。';
+}
+function renderPushMode(mode){
+  pushMode = mode;
+  const bar = $('pushModeBar'), tag = $('pushModeTag'), txt = $('pushModeText');
+  if(!bar || !tag || !txt) return;
+  bar.className = 'push-mode-bar ' + (mode === 'real' ? 'real' : 'dryrun');
+  tag.textContent = mode === 'real' ? '正式模式' : '测试模式';
+  txt.textContent = pushModeHint(mode) + (pushModeUser && pushModeUser !== mode ? '（你选择的模式与当前实际不一致，以实际结果为准）' : '');
+}
+function togglePushMode(){
+  const target = pushModeUser === 'real' ? 'dryrun' : 'real';
+  const msg = target === 'real'
+    ? '切换为【正式模式】会把待办卡片真实发送到企业微信群。\n请先确认 config/wecom_config.json 已配置 webhook_url，否则仍按测试模式处理（不会真实发送）。\n\n确认切换？'
+    : '切换为【测试模式】后不会真的发微信，只在本机查看推送效果（推荐先这样试）。\n\n确认切换？';
+  if(!confirm(msg)) return;
+  pushModeUser = target;
+  try { localStorage.setItem('opc_push_mode', target); } catch(e){}
+  renderPushMode(pushMode || (target === 'real' ? 'real' : 'dryrun'));
+}
+async function initPushMode(){
+  try { pushModeUser = localStorage.getItem('opc_push_mode') || ''; } catch(e){}
+  try {
+    const recs = await (await fetch('/api/v1/notifications')).json();
+    if(recs && recs.length && recs[0].mode){ renderPushMode(recs[0].mode === 'real' ? 'real' : 'dryrun'); return; }
+  } catch(e){}
+  renderPushMode('dryrun');
+}
+async function pushCards(){
+  const box = $('pushResult');
+  box.innerHTML = '<div class="note">正在尝试推送…</div>';
+  let rows = null;
+  // 自动重试 1 次（第一次失败 → 重试 → 仍失败给原因清单）
+  for(let attempt = 0; attempt < 2; attempt++){
+    try {
+      const res = await fetch('/api/v1/notifications/push', {method:'POST'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      rows = await res.json();
+      break;
+    } catch(e){ /* 记录失败，下一轮重试 */ }
+  }
+  if(rows !== null){
+    let okCnt = 0, failCnt = 0, skipCnt = 0, hasReal = false;
+    const items = rows.map(r => {
+      const s = String(r.result || '');
+      let st = 'ok';
+      if(s.indexOf('dryrun') >= 0){ if(s.indexOf('跳过') < 0) okCnt++; else { st = 'skip'; skipCnt++; } }
+      else if(s.indexOf('real') >= 0){
+        hasReal = true;
+        if(s.indexOf('HTTP 200') >= 0) okCnt++; else { st = 'fail'; failCnt++; }
+      }
+      else if(s.indexOf('跳过') >= 0){ st = 'skip'; skipCnt++; }
+      else okCnt++;
+      return '<div class="push-row"><span class="badge ' + (st === 'fail' ? 'fail' : 'ok') + '">' + (st === 'skip' ? '跳过' : (st === 'fail' ? '失败' : '成功')) + '</span><b>' + esc(r.name) + '</b><span>截止 ' + esc(r.deadline) + '</span><span class="note">' + esc(r.result) + '</span></div>';
+    }).join('');
+    renderPushMode(hasReal ? 'real' : 'dryrun');
+    const cls = (failCnt > 0 && okCnt > 0) ? 'warn' : (failCnt > 0 ? 'fail' : 'ok');
+    const title = cls === 'ok'
+      ? (okCnt === 0 && skipCnt === 0 ? '当前没有到期的提醒任务' : '推送完成，全部成功')
+      : (cls === 'warn' ? '部分成功：' + failCnt + ' 条失败，已如实标红' : '推送失败');
+    box.innerHTML = '<div class="push-box ' + cls + '"><b>' + title + '</b>' +
+      (items ? '<div style="margin-top:6px">' + items + '</div>' : '<div>不在提醒窗口内，或已全部推送过（去重不重复打扰）。</div>') + '</div>';
+  } else {
+    renderPushMode('dryrun');
+    box.innerHTML = '<div class="push-box fail"><b>推送没成功，已自动重试 1 次。可能的原因（按顺序排查）：</b>' +
+      '<ol style="margin:6px 0 0 18px"><li><b>webhook 未配置</b>：现在是测试模式，不会真的发到微信——到 config/wecom_config.json 把 webhook_url 填上</li>' +
+      '<li><b>网络不通</b>：本机连不上企业微信的机器人域名，检查一下网络</li>' +
+      '<li><b>链接无效</b>：webhook 地址被吊销或复制错了，去企业微信后台重新复制一遍</li></ol>' +
+      '<button class="ghost" style="margin-top:10px" onclick="pushCards()">再试一次</button></div>';
+  }
   loadPending(); loadPushed();
 }
-async function loadPending() {
+/* 常见问题快捷入口（V1.1 P2）：点击填入提问框并直接提问 */
+const QA_PRESETS = [
+  '数电票需要打印贴凭证吗？',
+  '小规模纳税人每季度要报哪些税？',
+  '发票要留多久？',
+  '别人转给我的发票能用吗？',
+  '我怎么知道要不要交税？',
+  '票据信息填错了怎么办？',
+  '怎么把票据弄进系统？',
+  '系统能帮我付款、报税吗？'
+];
+function initQuickQa(){
+  const c = $('qaChips');
+  if(!c) return;
+  c.innerHTML = QA_PRESETS.map((q, i) => '<button class="qa-chip" onclick="quickAsk(' + i + ')">' + esc(q) + '</button>').join('');
+}
+function quickAsk(i){
+  const q = QA_PRESETS[i];
+  if(!q) return;
+  $('kbq').value = q;
+  askKb();
+}
+async function loadPending(){
   const rows = await (await fetch('/api/v1/notifications/pending')).json();
-  document.querySelector('#pendTable tbody').innerHTML = rows.map(r =>
-    `<tr><td>${r.name}</td><td>${r.cycle}</td><td>${r.deadline}</td><td>${r.remind_on}</td><td>${r.agent_action}</td></tr>`).join('')
-    || '<tr><td colspan="5" class="note">窗口内任务已全部推送</td></tr>';
+  $('pendTable').querySelector('tbody').innerHTML = rows.map(r =>
+    '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.cycle) + '</td><td>' + esc(r.deadline) + '</td><td>' + esc(r.remind_on) + '</td><td>' + esc(r.agent_action) + '</td></tr>').join('') || '<tr><td colspan="5" class="note">窗口内任务已全部推送</td></tr>';
 }
-async function loadPushed() {
+async function loadPushed(){
   const rows = await (await fetch('/api/v1/notifications')).json();
-  document.querySelector('#pushTable tbody').innerHTML = rows.map(r =>
-    `<tr><td>${r.id}</td><td>${r.title}</td><td>${r.deadline}</td><td>${r.mode === 'real' ? '真实webhook' : 'dry-run'}</td><td class="${r.status==='ok'?'grade-A':'grade-C'}">${r.status}</td><td>${r.created_at}</td></tr>`).join('')
-    || '<tr><td colspan="6" class="note">暂无推送记录</td></tr>';
+  $('pushTable').querySelector('tbody').innerHTML = rows.map(r =>
+    '<tr><td>' + r.id + '</td><td>' + esc(r.title) + '</td><td>' + esc(r.deadline) + '</td><td>' + (r.mode === 'real' ? '正式模式' : '测试模式') + '</td><td class="' + (r.status === 'ok' ? 'grade-A' : 'grade-C') + '">' + esc(r.status) + '</td><td>' + esc(r.created_at) + '</td></tr>').join('') || '<tr><td colspan="6" class="note">暂无推送记录</td></tr>';
 }
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
-  document.getElementById(b.dataset.tab).classList.add('active');
-  history.replaceState(null, '', '#' + b.dataset.tab);
-});
+async function askKb(){
+  const q = $('kbq').value;
+  if(!q) return;
+  const data = await (await fetch('/api/v1/kb/ask?q=' + encodeURIComponent(q))).json();
+  const conf = data.confidence === 'A' ? 'grade-A' : 'grade-C';
+  let html = '<div class="advice"><span class="' + conf + '">置信度 ' + esc(data.confidence) + '</span>　' + esc(data.answer);
+  if(data.basis) html += '<div class="src">依据：' + esc(data.basis) + '</div>';
+  if(data.condition) html += '<div class="src">适用条件：' + esc(data.condition) + '</div>';
+  if(data.source) html += '<div class="src">来源：' + esc(data.source) + '（' + esc(data.date) + '，' + esc(data.version) + '，审核：' + esc(data.reviewed_by) + '）</div>';
+  if(data.score !== undefined) html += '<div class="src">检索匹配分 ' + data.score + ' ｜ 回答模式：' + esc(data.mode) + '</div>';
+  html += '</div>';
+  $('kbAnswer').innerHTML = html;
+}
+async function loadDocs(){
+  const rows = await (await fetch('/api/v1/documents')).json();
+  $('docTable').querySelector('tbody').innerHTML = rows.map(r =>
+    '<tr><td>' + r.id + '</td><td>' + esc(r.invoice_no) + '</td><td class="grade-' + esc(r.grade) + '">' + esc(r.grade) + '</td><td>' + esc(r.status) + '</td><td>' + esc(r.created_at) + '</td>' +
+    '<td>' + (r.status === 'pending' ? '<button class="primary" style="padding:5px 14px;font-size:12px" onclick="confirmDoc(' + r.id + ')">人工确认</button>' : '—') + '</td></tr>').join('');
+}
+async function confirmDoc(id){
+  await fetch('/api/v1/documents/' + id + '/confirm', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({actor:'财务人员'})});
+  loadDocs(); loadDashboard();
+}
+
+/* ---------- 新手引导 ---------- */
+const obTexts = [
+  ['这里就是你的工作台', '今天该做什么（税期、待确认票据、待推送）都在首页一眼看到。'],
+  ['处理一张票据只需 3 步', '传票据 → 智能识别 → 确认入账。不会？点「先看个例子」。'],
+  ['不懂的词点 ？号', '界面上每个专业术语旁边都有 ？，点一下就有白话解释。']
+];
+async function initOnboarding(){
+  let st;
+  try { st = await (await fetch('/api/v1/onboarding')).json(); } catch(e){ return; }
+  if(st.done) return;
+  onboardStep = Math.max(1, Math.min(3, st.step || 1));
+  renderOnboard();
+  $('onboardMask').classList.add('show');
+}
+function renderOnboard(){
+  $('onboardBody').innerHTML = '<div style="font-size:17px;font-weight:bold;margin-bottom:8px">' + esc(obTexts[onboardStep-1][0]) + '</div><div>' + esc(obTexts[onboardStep-1][1]) + '</div>';
+  $('onboardDots').innerHTML = [1,2,3].map(i => '<span class="' + (i === onboardStep ? 'on' : '') + '"></span>').join('');
+  $('obPrev').classList.toggle('hidden', onboardStep === 1);
+  if(onboardStep === 3){
+    $('obNext').innerHTML = '先看个例子';
+  } else {
+    $('obNext').innerHTML = '下一步';
+  }
+}
+function obStep(dir){
+  if(dir > 0){
+    if(onboardStep < 3){
+      onboardStep++;
+      fetch('/api/v1/onboarding', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({step: onboardStep})});
+      renderOnboard();
+    } else {
+      finishOnboarding(true);
+    }
+  } else {
+    onboardStep--;
+    fetch('/api/v1/onboarding', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({step: onboardStep})});
+    renderOnboard();
+  }
+}
+function skipOnboarding(){ finishOnboarding(false); }
+function finishOnboarding(showDemo){
+  fetch('/api/v1/onboarding', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({done: true})});
+  $('onboardMask').classList.remove('show');
+  if(showDemo) runTutorial(true);
+}
+
+/* ---------- 启动 ---------- */
 const hashTab = location.hash.replace('#', '');
-if (hashTab) { const b = document.querySelector(`nav button[data-tab="${hashTab}"]`); if (b) b.click(); }
+if(hashTab && document.querySelector('nav button[data-tab="'+hashTab+'"]')) jump(hashTab);
+initGlossary();
+loadDashboard();
 loadCal(); loadDocs(); loadPending(); loadPushed();
+initQuickQa(); initPushMode();
+initOnboarding();
 </script>
+<footer style="text-align:center;color:#94a3b8;font-size:12px;padding:12px 12px 20px;line-height:1.6;">开发者信息：瀚钦（丹东）智能科技有限公司</footer>
 </body>
 </html>

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """冒烟测试：PaddleOCR适配器与引擎配置层。
 
 覆盖：OCR行→发票字段锚定（全锚定/诚实缺失）、引擎惰性加载与诚实回退、

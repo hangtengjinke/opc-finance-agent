@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """存储层专项测试：PG兼容层 / 对象存储门面 / 后端分发（9用例）。
 
 运行：python tests/storage_test.py

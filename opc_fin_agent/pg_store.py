@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """PostgreSQL 生产后端：sqlite3 API 兼容包装器，业务代码零改动切换。
 
 设计要点（对应《阶段0技术规格-接口边界与数据分区设计》）：

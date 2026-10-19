@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """FastAPI 网关：对外唯一入口，仅暴露L0/L1能力，不提供任何L2自动化接口。"""
 import base64
+import datetime as dt
+import json
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -14,7 +16,7 @@ from .kb import ask as kb_ask, kb_inventory, search_kb
 from .ocr import (demo_ocr_output, engine_status, make_demo_png,
                   process_image_document, verify_ocr_document)
 from .pipeline import process_document
-from .settings import APP_NAME, APP_VERSION, WEB_DIR, load_master_data
+from .settings import APP_NAME, APP_VERSION, BASE_DIR, WEB_DIR, load_master_data
 from .wecom import due_tasks, push_due_reminders
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
@@ -181,8 +183,12 @@ def pending_cards():
 
 
 @app.post("/api/v1/notifications/push")
-def push_cards():
-    """推送提醒窗口内待办卡片至企业微信（未配置webhook时为dry-run落本地）。"""
+def push_cards(dry_run: str = ""):
+    """推送提醒窗口内待办卡片至企业微信（未配置webhook时为dry-run落本地）。
+    测试钩子：dry_run=fail 模拟推送失败，用于验证前端自动重试与原因清单。"""
+    if dry_run == "fail":
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="模拟推送失败：网络不通（测试钩子）")
     conn = db.get_conn()
     try:
         return push_due_reminders(conn)
@@ -235,3 +241,132 @@ def audit(doc_id: int = None):
         return [dict(r) for r in rows]
     finally:
         conn.close()
+
+
+# ================= V1.1 P0 新增接口（小白友好升级，仅界面聚合，不动业务内核） =================
+
+ONBOARDING_STATE_PATH = BASE_DIR / "config" / "onboarding_state.json"
+
+GLOSSARY = [
+    {"term": "数电票", "plain": "电子发票，税务局发的数字发票，不用纸质版也能正常入账。"},
+    {"term": "查重", "plain": "检查这张票是不是已经录入过，防止同一张票重复入账。"},
+    {"term": "建议等级", "plain": "系统给出的处理意见：A=可以直接确认；B=核对后确认；C=转人工。"},
+    {"term": "置信度", "plain": "机器识别有多准：90%以上算很准；低于90%建议人工再核对一眼。"},
+    {"term": "小规模纳税人", "plain": "规模小、税率低的企业类型，一般按季度申报。"},
+    {"term": "归档", "plain": "把票据存进台账留底，之后随时可查。"},
+    {"term": "测试模式", "plain": "演示用的推送模式，不会真的发到微信，只是让你看效果。"},
+    {"term": "人工核验", "plain": "机器没认准的时候，需要你对照原件核对、修正信息。"},
+    {"term": "转人工", "plain": "这笔业务超出系统能处理的范围，需要交给财务或税务专业人员处理。"},
+    {"term": "申报期", "plain": "向税务局报税的期限，到期前要完成申报，逾期会有影响。"},
+    {"term": "操作留痕", "plain": "系统记录谁在什么时候做了什么操作，随时可查，安全放心。"},
+    {"term": "价税合计", "plain": "一张票的\"价钱\"= 商品金额 + 税钱，合起来叫价税合计。"},
+    {"term": "含税/不含税", "plain": "含税=价格里已经算进税钱；不含税=只算商品本身的价钱。看金额前先分清这个。"},
+    {"term": "台账", "plain": "系统里的票据记账本，归档后的票都存在这里，随时可查。"},
+    {"term": "电子税务局", "plain": "税务局官方的网上办税平台，报税、缴税都在那里办，本系统不会替你登录。"},
+    {"term": "申报表", "plain": "给税务局交的报表，说明你这段时间该交多少税。"},
+    {"term": "税种", "plain": "税的种类，比如增值税、所得税、印花税，不同税种交法不同。"},
+    {"term": "OCR识别", "plain": "机器把图片上的字\"读\"出来变成文字，就是认票据图片的技术。"},
+    {"term": "拖拽上传", "plain": "直接把文件图标用鼠标拖到框里就能上传，不用点开文件夹找。"},
+    {"term": "查重拦截", "plain": "系统发现这张票以前录过了，自动拦下，免得你重复入账。"},
+    {"term": "人工确认", "plain": "由你亲自点一下\"确认\"，表示你核对过这张票，确认后记入台账留痕。"},
+]
+
+
+def _load_onboarding():
+    try:
+        with open(ONBOARDING_STATE_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {"done": False, "step": 0}
+
+
+class OnboardingBody(BaseModel):
+    done: bool = None
+    step: int = None
+
+
+@app.get("/api/v1/dashboard")
+def dashboard():
+    """首页驾驶舱聚合：税期倒计时 + 待确认票据数 + 待推送任务数 + 最近5笔票据。"""
+    conn = db.get_conn()
+    try:
+        today = dt.date.today()
+        upcoming = [t for t in get_calendar()
+                    if t["next_deadline"] >= today.isoformat()]
+        nearest = min(upcoming, key=lambda t: t["next_deadline"]) if upcoming else None
+        countdown = None
+        if nearest:
+            days_left = (dt.date.fromisoformat(nearest["next_deadline"]) - today).days
+            countdown = {
+                "task_name": nearest["name"],
+                "deadline": nearest["next_deadline"],
+                "days_left": days_left,
+            }
+        pending_count = conn.execute(
+            "SELECT COUNT(*) c FROM documents"
+            " WHERE status IN ('pending','pending_verification')").fetchone()["c"]
+        pushed = {(r["task_id"], r["deadline"]) for r in
+                  conn.execute("SELECT task_id, deadline FROM pushed_cards")}
+        todo_push = [t for t in due_tasks()
+                     if (t["id"], t["next_deadline"]) not in pushed]
+        rows = conn.execute(
+            "SELECT id, invoice_no, grade, status, fields, created_at"
+            " FROM documents ORDER BY id DESC LIMIT 5").fetchall()
+        recent = []
+        for r in rows:
+            amount = None
+            try:
+                fields = json.loads(r["fields"] or "{}")
+                amount = fields.get("total") or fields.get("amount")
+            except ValueError:
+                pass
+            recent.append({"id": r["id"], "invoice_no": r["invoice_no"],
+                           "grade": r["grade"], "status": r["status"],
+                           "amount": amount, "date": r["created_at"]})
+        return {
+            "countdown": countdown,
+            "pending_count": int(pending_count),
+            "pending_push_count": len(todo_push),
+            "recent": recent,
+            "company": load_master_data()["company"],
+        }
+    finally:
+        conn.close()
+
+
+@app.get("/api/v1/onboarding")
+def get_onboarding():
+    state = _load_onboarding()
+    return {"done": bool(state.get("done", False)), "step": int(state.get("step", 0))}
+
+
+@app.post("/api/v1/onboarding")
+def set_onboarding(body: OnboardingBody):
+    state = _load_onboarding()
+    if body.done is not None:
+        state["done"] = bool(body.done)
+    if body.step is not None:
+        state["step"] = int(body.step)
+        if body.step >= 3:
+            state["done"] = True
+    with open(ONBOARDING_STATE_PATH, "w", encoding="utf-8") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+    return state
+
+
+@app.post("/api/v1/documents/tutorial")
+def run_tutorial():
+    """一键演示：合成演示票据（图片+确定性OCR输出），跑通完整图片票据流程。"""
+    conn = db.get_conn()
+    try:
+        demo = demo_ocr_output("clear")
+        png = make_demo_png()
+        return process_image_document(
+            conn, "Demo_一键演示.png", png, demo, actor="演示用户", engine_key="demo")
+    finally:
+        conn.close()
+
+
+@app.get("/api/v1/glossary")
+def glossary():
+    return {"items": GLOSSARY, "version": "1.0"}

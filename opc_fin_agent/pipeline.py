@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """主流程管道：安检 → 抽取 → 查重 → 规则校验 → 处理建议 → 归档（全程留痕）。"""
 import datetime as dt
 import hashlib

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """PaddleOCR本地识别引擎适配器（生产引擎，与DemoOcrEngine实现同一recognize接口）。
 
 四条设计约束（对齐阶段0技术规格IF-04与README生产化路线）：

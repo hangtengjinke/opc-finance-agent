@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """数据访问层：SQLite/PostgreSQL 双后端，审计采用哈希链防篡改。
 
 后端由 config/storage_config.json 的 database.backend 决定：

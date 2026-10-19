@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 瀚钦OPC财税智能体管理平台 (c) 2026 瀚钦科技有限公司. All rights reserved.
+# OPC创业财税助手 (c) 2026 瀚钦科技有限公司. All rights reserved.
 """规则引擎：全部为确定性代码校验，不依赖模型判断（平台原则：规则优先）。"""
 import datetime as dt
 import re
